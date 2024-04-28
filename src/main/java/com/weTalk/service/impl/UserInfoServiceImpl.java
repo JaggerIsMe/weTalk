@@ -1,12 +1,21 @@
 package com.weTalk.service.impl;
 
+import java.util.Date;
 import java.util.List;
 
 import javax.annotation.Resource;
 
+import com.weTalk.config.AppConfig;
+import com.weTalk.dto.TokenUserInfoDto;
+import com.weTalk.entity.constants.Constants;
+import com.weTalk.entity.enums.*;
+import com.weTalk.entity.po.UserInfoBeauty;
+import com.weTalk.exception.BusinessException;
+import com.weTalk.mappers.UserInfoBeautyMapper;
+import com.weTalk.redis.RedisComponent;
+import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.stereotype.Service;
 
-import com.weTalk.entity.enums.PageSize;
 import com.weTalk.entity.query.UserInfoQuery;
 import com.weTalk.entity.po.UserInfo;
 import com.weTalk.entity.vo.PaginationResultVO;
@@ -14,6 +23,7 @@ import com.weTalk.entity.query.SimplePage;
 import com.weTalk.mappers.UserInfoMapper;
 import com.weTalk.service.UserInfoService;
 import com.weTalk.utils.StringTools;
+import org.springframework.transaction.annotation.Transactional;
 
 
 /**
@@ -22,133 +32,241 @@ import com.weTalk.utils.StringTools;
 @Service("userInfoService")
 public class UserInfoServiceImpl implements UserInfoService {
 
-	@Resource
-	private UserInfoMapper<UserInfo, UserInfoQuery> userInfoMapper;
+    @Resource
+    private UserInfoMapper<UserInfo, UserInfoQuery> userInfoMapper;
 
-	/**
-	 * 根据条件查询列表
-	 */
-	@Override
-	public List<UserInfo> findListByParam(UserInfoQuery param) {
-		return this.userInfoMapper.selectList(param);
-	}
+    @Resource
+    private UserInfoBeautyMapper<UserInfoBeauty, UserInfoQuery> userInfoBeautyMapper;
 
-	/**
-	 * 根据条件查询列表
-	 */
-	@Override
-	public Integer findCountByParam(UserInfoQuery param) {
-		return this.userInfoMapper.selectCount(param);
-	}
+    @Resource
+    private AppConfig appConfig;
 
-	/**
-	 * 分页查询方法
-	 */
-	@Override
-	public PaginationResultVO<UserInfo> findListByPage(UserInfoQuery param) {
-		int count = this.findCountByParam(param);
-		int pageSize = param.getPageSize() == null ? PageSize.SIZE15.getSize() : param.getPageSize();
+    @Resource
+    private RedisComponent redisComponent;
 
-		SimplePage page = new SimplePage(param.getPageNo(), count, pageSize);
-		param.setSimplePage(page);
-		List<UserInfo> list = this.findListByParam(param);
-		PaginationResultVO<UserInfo> result = new PaginationResultVO(count, page.getPageSize(), page.getPageNo(), page.getPageTotal(), list);
-		return result;
-	}
+    /**
+     * 根据条件查询列表
+     */
+    @Override
+    public List<UserInfo> findListByParam(UserInfoQuery param) {
+        return this.userInfoMapper.selectList(param);
+    }
 
-	/**
-	 * 新增
-	 */
-	@Override
-	public Integer add(UserInfo bean) {
-		return this.userInfoMapper.insert(bean);
-	}
+    /**
+     * 根据条件查询列表
+     */
+    @Override
+    public Integer findCountByParam(UserInfoQuery param) {
+        return this.userInfoMapper.selectCount(param);
+    }
 
-	/**
-	 * 批量新增
-	 */
-	@Override
-	public Integer addBatch(List<UserInfo> listBean) {
-		if (listBean == null || listBean.isEmpty()) {
-			return 0;
-		}
-		return this.userInfoMapper.insertBatch(listBean);
-	}
+    /**
+     * 分页查询方法
+     */
+    @Override
+    public PaginationResultVO<UserInfo> findListByPage(UserInfoQuery param) {
+        int count = this.findCountByParam(param);
+        int pageSize = param.getPageSize() == null ? PageSize.SIZE15.getSize() : param.getPageSize();
 
-	/**
-	 * 批量新增或者修改
-	 */
-	@Override
-	public Integer addOrUpdateBatch(List<UserInfo> listBean) {
-		if (listBean == null || listBean.isEmpty()) {
-			return 0;
-		}
-		return this.userInfoMapper.insertOrUpdateBatch(listBean);
-	}
+        SimplePage page = new SimplePage(param.getPageNo(), count, pageSize);
+        param.setSimplePage(page);
+        List<UserInfo> list = this.findListByParam(param);
+        PaginationResultVO<UserInfo> result = new PaginationResultVO(count, page.getPageSize(), page.getPageNo(), page.getPageTotal(), list);
+        return result;
+    }
 
-	/**
-	 * 多条件更新
-	 */
-	@Override
-	public Integer updateByParam(UserInfo bean, UserInfoQuery param) {
-		StringTools.checkParam(param);
-		return this.userInfoMapper.updateByParam(bean, param);
-	}
+    /**
+     * 新增
+     */
+    @Override
+    public Integer add(UserInfo bean) {
+        return this.userInfoMapper.insert(bean);
+    }
 
-	/**
-	 * 多条件删除
-	 */
-	@Override
-	public Integer deleteByParam(UserInfoQuery param) {
-		StringTools.checkParam(param);
-		return this.userInfoMapper.deleteByParam(param);
-	}
+    /**
+     * 批量新增
+     */
+    @Override
+    public Integer addBatch(List<UserInfo> listBean) {
+        if (listBean == null || listBean.isEmpty()) {
+            return 0;
+        }
+        return this.userInfoMapper.insertBatch(listBean);
+    }
 
-	/**
-	 * 根据UserId获取对象
-	 */
-	@Override
-	public UserInfo getUserInfoByUserId(String userId) {
-		return this.userInfoMapper.selectByUserId(userId);
-	}
+    /**
+     * 批量新增或者修改
+     */
+    @Override
+    public Integer addOrUpdateBatch(List<UserInfo> listBean) {
+        if (listBean == null || listBean.isEmpty()) {
+            return 0;
+        }
+        return this.userInfoMapper.insertOrUpdateBatch(listBean);
+    }
 
-	/**
-	 * 根据UserId修改
-	 */
-	@Override
-	public Integer updateUserInfoByUserId(UserInfo bean, String userId) {
-		return this.userInfoMapper.updateByUserId(bean, userId);
-	}
+    /**
+     * 多条件更新
+     */
+    @Override
+    public Integer updateByParam(UserInfo bean, UserInfoQuery param) {
+        StringTools.checkParam(param);
+        return this.userInfoMapper.updateByParam(bean, param);
+    }
 
-	/**
-	 * 根据UserId删除
-	 */
-	@Override
-	public Integer deleteUserInfoByUserId(String userId) {
-		return this.userInfoMapper.deleteByUserId(userId);
-	}
+    /**
+     * 多条件删除
+     */
+    @Override
+    public Integer deleteByParam(UserInfoQuery param) {
+        StringTools.checkParam(param);
+        return this.userInfoMapper.deleteByParam(param);
+    }
 
-	/**
-	 * 根据Email获取对象
-	 */
-	@Override
-	public UserInfo getUserInfoByEmail(String email) {
-		return this.userInfoMapper.selectByEmail(email);
-	}
+    /**
+     * 根据UserId获取对象
+     */
+    @Override
+    public UserInfo getUserInfoByUserId(String userId) {
+        return this.userInfoMapper.selectByUserId(userId);
+    }
 
-	/**
-	 * 根据Email修改
-	 */
-	@Override
-	public Integer updateUserInfoByEmail(UserInfo bean, String email) {
-		return this.userInfoMapper.updateByEmail(bean, email);
-	}
+    /**
+     * 根据UserId修改
+     */
+    @Override
+    public Integer updateUserInfoByUserId(UserInfo bean, String userId) {
+        return this.userInfoMapper.updateByUserId(bean, userId);
+    }
 
-	/**
-	 * 根据Email删除
-	 */
-	@Override
-	public Integer deleteUserInfoByEmail(String email) {
-		return this.userInfoMapper.deleteByEmail(email);
-	}
+    /**
+     * 根据UserId删除
+     */
+    @Override
+    public Integer deleteUserInfoByUserId(String userId) {
+        return this.userInfoMapper.deleteByUserId(userId);
+    }
+
+    /**
+     * 根据Email获取对象
+     */
+    @Override
+    public UserInfo getUserInfoByEmail(String email) {
+        return this.userInfoMapper.selectByEmail(email);
+    }
+
+    /**
+     * 根据Email修改
+     */
+    @Override
+    public Integer updateUserInfoByEmail(UserInfo bean, String email) {
+        return this.userInfoMapper.updateByEmail(bean, email);
+    }
+
+    /**
+     * 根据Email删除
+     */
+    @Override
+    public Integer deleteUserInfoByEmail(String email) {
+        return this.userInfoMapper.deleteByEmail(email);
+    }
+
+    /**
+     * 注册
+     * @param email
+     * @param password
+     * @param nickName
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void register(String email, String password, String nickName) {
+        UserInfo userInfo = this.userInfoMapper.selectByEmail(email);
+        if (null != userInfo) {
+            throw new BusinessException("邮箱账号已存在");
+        }
+        String userId;
+        UserInfoBeauty beautyAcc = this.userInfoBeautyMapper.selectByEmail(email);
+
+        //是否使用靓号作为ID
+        Boolean isUseBeautyAcc = ((null != beautyAcc) && (BeautyAccountStatusEnum.UNUSED.getStatus().equals(beautyAcc.getStatus())));
+        if (isUseBeautyAcc) {
+            userId = UserContcatTypeEnum.USER.getPrefix() + beautyAcc.getUserId();
+            //若使用靓号 把靓号标记为已使用
+            UserInfoBeauty updateBeauty = new UserInfoBeauty();
+            updateBeauty.setStatus(BeautyAccountStatusEnum.USED.getStatus());
+            this.userInfoBeautyMapper.updateById(updateBeauty, beautyAcc.getId());
+        } else {
+            userId = StringTools.createUserId();
+        }
+
+        Date curDate = new Date();
+        userInfo = new UserInfo();
+        userInfo.setUserId(userId);
+        userInfo.setNickName(nickName);
+        userInfo.setEmail(email);
+        userInfo.setPassword(StringTools.encodeByMd5(password));
+        userInfo.setCreateTime(curDate);
+        userInfo.setStatus(UserStatusEnum.ENABLE.getStatus());
+        userInfo.setLastOffTime(curDate.getTime());
+        userInfo.setJoinType(JoinTypeEnum.NEED_APPLY.getType());
+        this.userInfoMapper.insert(userInfo);
+
+        //TODO 创建机器人好友
+
+    }
+
+    /**
+     * 登录
+     * @param email
+     * @param password
+     * @return
+     */
+    @Override
+    public TokenUserInfoDto login(String email, String password) {
+        UserInfo userInfo = this.userInfoMapper.selectByEmail(email);
+        if (null == userInfo || !userInfo.getPassword().equals(password)) {
+            throw new BusinessException("账号或密码错误");
+        }
+        if (UserStatusEnum.DISABLE.getStatus().equals(userInfo.getStatus())){
+            throw new BusinessException("账号已禁用");
+        }
+
+        Long lastHeartBeat = redisComponent.getUserHeartBeat(userInfo.getUserId());
+        if (null != lastHeartBeat){
+            throw new BusinessException("此账号已在别处登录，请退出后重试");
+        }
+
+        //TODO 查询我的群组
+        //TODO 查询我的联系人
+
+        TokenUserInfoDto tokenUserInfoDto = getTokenUserInfoDto(userInfo);
+
+        //保存登录信息到Redis中
+        String token = StringTools.encodeByMd5(tokenUserInfoDto.getUserId()+StringTools.createRandomStr(Constants.LENGTH_20));
+        tokenUserInfoDto.setToken(token);
+        redisComponent.saveTokenUserInfoDto(tokenUserInfoDto);
+
+        return tokenUserInfoDto;
+
+    }
+
+    /**
+     * 由UserInfo获取Token对象
+     * @param userInfo
+     * @return
+     */
+    private TokenUserInfoDto getTokenUserInfoDto(UserInfo userInfo) {
+        TokenUserInfoDto tokenUserInfoDto = new TokenUserInfoDto();
+        tokenUserInfoDto.setUserId(userInfo.getUserId());
+        tokenUserInfoDto.setNickName(userInfo.getNickName());
+
+        String adminEmailStr = appConfig.getAdminEmails();
+        if (!StringTools.isEmpty(adminEmailStr) && ArrayUtils.contains(adminEmailStr.split(","), userInfo.getEmail())) {
+            tokenUserInfoDto.setAdmin(true);
+        } else {
+            tokenUserInfoDto.setAdmin(false);
+        }
+        return tokenUserInfoDto;
+    }
+
 }

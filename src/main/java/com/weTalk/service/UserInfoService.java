@@ -2,6 +2,7 @@ package com.weTalk.service;
 
 import java.util.List;
 
+import com.weTalk.dto.TokenUserInfoDto;
 import com.weTalk.entity.query.UserInfoQuery;
 import com.weTalk.entity.po.UserInfo;
 import com.weTalk.entity.vo.PaginationResultVO;
@@ -87,4 +88,13 @@ public interface UserInfoService {
 	 */
 	Integer deleteUserInfoByEmail(String email);
 
+	/**
+	 * 注册
+	 */
+	void register(String email, String password, String nickName);
+
+	/**
+	 * 登录
+	 */
+	TokenUserInfoDto login(String email, String password);
 }

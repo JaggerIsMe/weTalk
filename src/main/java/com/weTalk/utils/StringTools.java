@@ -1,5 +1,11 @@
 package com.weTalk.utils;
+
+import com.weTalk.entity.constants.Constants;
+import com.weTalk.entity.enums.UserContcatTypeEnum;
 import com.weTalk.exception.BusinessException;
+import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.lang3.RandomStringUtils;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
@@ -50,4 +56,43 @@ public class StringTools {
         }
         return false;
     }
+
+    /**
+     * 生成用户ID
+     *
+     * @return
+     */
+    public static String createUserId() {
+        return UserContcatTypeEnum.USER.getPrefix() + createRandomNum(Constants.LENGTH_11);
+    }
+
+    /**
+     * 生成纯数字字符串
+     *
+     * @param count
+     * @return
+     */
+    public static String createRandomNum(Integer count) {
+        return RandomStringUtils.random(count, false, true);
+    }
+
+    /**
+     * 生成字符串
+     *
+     * @param count
+     * @return
+     */
+    public static String createRandomStr(Integer count) {
+        return RandomStringUtils.random(count, true, true);
+    }
+
+    /**
+     * 使用MD5加密字符串
+     * @param originStr
+     * @return
+     */
+    public static final String encodeByMd5(String originStr) {
+        return StringTools.isEmpty(originStr) ? null : DigestUtils.md5Hex(originStr);
+    }
+
 }
