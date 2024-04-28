@@ -51,6 +51,13 @@ public class UserContactQuery extends BaseParam {
 
 	private String lastUpdateTimeEnd;
 
+	/**
+	 * 是否要进行user_contact表和user_info表的链接查询
+	 * 以查询群员的信息
+	 * 该属性不在数据库表设计里
+	 */
+	private Boolean isQueryUserInfo;
+
 
 	public void setUserId(String userId){
 		this.userId = userId;
@@ -146,4 +153,11 @@ public class UserContactQuery extends BaseParam {
 		return this.lastUpdateTimeEnd;
 	}
 
+	public Boolean getQueryUserInfo() {
+		return isQueryUserInfo;
+	}
+
+	public void setQueryUserInfo(Boolean queryUserInfo) {
+		isQueryUserInfo = queryUserInfo;
+	}
 }

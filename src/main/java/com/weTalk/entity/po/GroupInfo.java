@@ -53,6 +53,12 @@ public class GroupInfo implements Serializable {
 	 */
 	private Integer status;
 
+	/**
+	 * 群成员总数
+	 * 该属性不在数据库表设计里
+	 */
+	private Integer memberCount;
+
 
 	public void setGroupId(String groupId){
 		this.groupId = groupId;
@@ -108,6 +114,14 @@ public class GroupInfo implements Serializable {
 
 	public Integer getStatus(){
 		return this.status;
+	}
+
+	public Integer getMemberCount() {
+		return memberCount;
+	}
+
+	public void setMemberCount(Integer memberCount) {
+		this.memberCount = memberCount;
 	}
 
 	@Override

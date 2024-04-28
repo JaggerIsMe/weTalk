@@ -50,6 +50,12 @@ public class UserContact implements Serializable {
 	@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
 	private Date lastUpdateTime;
 
+	/**
+	 * 为user_contact表和user_info表连接查询后得到的群成员信息结果 起的别名叫contactName，即为群员的昵称nick_name
+	 * 该属性不在数据库表设计里
+	 */
+	private String contactName;
+
 
 	public void setUserId(String userId){
 		this.userId = userId;
@@ -97,6 +103,14 @@ public class UserContact implements Serializable {
 
 	public Date getLastUpdateTime(){
 		return this.lastUpdateTime;
+	}
+
+	public String getContactName() {
+		return contactName;
+	}
+
+	public void setContactName(String contactName) {
+		this.contactName = contactName;
 	}
 
 	@Override
