@@ -1,10 +1,20 @@
 package com.weTalk.controller;
+
+import com.weTalk.dto.TokenUserInfoDto;
+import com.weTalk.entity.constants.Constants;
 import com.weTalk.entity.enums.ResponseCodeEnum;
 import com.weTalk.entity.vo.ResponseVO;
 import com.weTalk.exception.BusinessException;
+import com.weTalk.redis.RedisUtils;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 
 
 public class ABaseController {
+
+    @Resource
+    private RedisUtils redisUtils;
 
     protected static final String STATUC_SUCCESS = "success";
 
@@ -40,4 +50,17 @@ public class ABaseController {
         vo.setData(t);
         return vo;
     }
+
+    /**
+     * 在HttpServletRequest里获取请求头里的token
+     * 在从Redis里取出用户信息
+     * @param request
+     * @return
+     */
+    protected TokenUserInfoDto getTokenUserInfo(HttpServletRequest request) {
+        String token = request.getHeader("token");
+        TokenUserInfoDto tokenUserInfoDto = (TokenUserInfoDto) redisUtils.get(Constants.REDIS_KEY_WS_TOKEN + token);
+        return tokenUserInfoDto;
+    }
+
 }

@@ -1,5 +1,6 @@
 package com.weTalk.controller;
 
+import com.weTalk.annotation.GlobalInterceptor;
 import com.weTalk.dto.TokenUserInfoDto;
 import com.weTalk.entity.constants.Constants;
 import com.weTalk.entity.po.UserInfo;
@@ -120,6 +121,7 @@ public class AccountController extends ABaseController {
     }
 
     @RequestMapping("/getSysSetting")
+    @GlobalInterceptor
     public ResponseVO getSysSetting() {
         return getSuccessResponseVO(redisComponent.getSysSetting());
     }
