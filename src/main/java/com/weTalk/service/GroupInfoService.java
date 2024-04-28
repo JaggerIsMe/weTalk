@@ -1,10 +1,12 @@
 package com.weTalk.service;
 
+import java.io.IOException;
 import java.util.List;
 
 import com.weTalk.entity.query.GroupInfoQuery;
 import com.weTalk.entity.po.GroupInfo;
 import com.weTalk.entity.vo.PaginationResultVO;
+import org.springframework.web.multipart.MultipartFile;
 
 
 /**
@@ -68,5 +70,13 @@ public interface GroupInfoService {
 	 * 根据GroupId删除
 	 */
 	Integer deleteGroupInfoByGroupId(String groupId);
+
+	/**
+	 * 保存群组信息
+	 * @param groupInfo
+	 * @param avatarFile
+	 * @param avatarCover
+	 */
+	void saveGroup(GroupInfo groupInfo, MultipartFile avatarFile, MultipartFile avatarCover) throws IOException;
 
 }

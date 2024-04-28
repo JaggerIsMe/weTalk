@@ -1,5 +1,6 @@
 package com.weTalk.controller;
 
+import java.io.IOException;
 import java.util.List;
 
 import com.weTalk.annotation.GlobalInterceptor;
@@ -28,6 +29,18 @@ public class GroupInfoController extends ABaseController{
 	@Resource
 	private GroupInfoService groupInfoService;
 
+	/**
+	 * 创建或修改群组
+	 * @param request
+	 * @param groupId
+	 * @param groupName
+	 * @param groupNotice
+	 * @param joinType
+	 * @param avatarFile
+	 * @param avatarCover
+	 * @return
+	 * @throws IOException
+	 */
 	@RequestMapping("/saveGroup")
 	@GlobalInterceptor
 	public ResponseVO saveGroup(HttpServletRequest request,
@@ -36,11 +49,33 @@ public class GroupInfoController extends ABaseController{
 								String groupNotice,
 								@NotNull Integer joinType,
 								MultipartFile avatarFile,
-								MultipartFile avatarCover){
+								MultipartFile avatarCover) throws IOException {
 		TokenUserInfoDto tokenUserInfoDto = getTokenUserInfo(request);
-
+		GroupInfo groupInfo = new GroupInfo();
+		groupInfo.setGroupId(groupId);
+		groupInfo.setGroupOwnerId(tokenUserInfoDto.getUserId());
+		groupInfo.setGroupName(groupName);
+		groupInfo.setGroupNotice(groupNotice);
+		groupInfo.setJoinType(joinType);
+		this.groupInfoService.saveGroup(groupInfo, avatarFile, avatarCover);
 
 		return getSuccessResponseVO(null);
+	}
+
+	/**
+	 * 获取我创建的群组
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping("/loadMyGroup")
+	@GlobalInterceptor
+	public ResponseVO loadMyGroup(HttpServletRequest request) {
+		TokenUserInfoDto tokenUserInfoDto = getTokenUserInfo(request);
+		GroupInfoQuery groupInfoQuery = new GroupInfoQuery();
+		groupInfoQuery.setGroupOwnerId(tokenUserInfoDto.getUserId());
+		groupInfoQuery.setOrderBy("create_time desc");
+		List<GroupInfo> groupInfoList = this.groupInfoService.findListByParam(groupInfoQuery);
+		return getSuccessResponseVO(groupInfoList);
 	}
 
 }

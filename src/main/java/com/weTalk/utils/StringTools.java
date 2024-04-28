@@ -59,11 +59,18 @@ public class StringTools {
 
     /**
      * 生成用户ID
-     *
      * @return
      */
     public static String createUserId() {
         return UserContcatTypeEnum.USER.getPrefix() + createRandomNum(Constants.LENGTH_11);
+    }
+
+    /**
+     * 生成群组ID
+     * @return
+     */
+    public static String createGroupId() {
+        return UserContcatTypeEnum.GROUP.getPrefix() + createRandomNum(Constants.LENGTH_11);
     }
 
     /**

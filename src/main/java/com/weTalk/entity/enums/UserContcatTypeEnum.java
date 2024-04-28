@@ -2,6 +2,9 @@ package com.weTalk.entity.enums;
 
 import com.weTalk.utils.StringTools;
 
+/**
+ * 联系人类型
+ */
 public enum UserContcatTypeEnum {
     USER(0, "U", "好友"),
     GROUP(1, "G", "群组");
