@@ -29,9 +29,9 @@ public class UserContactController extends ABaseController{
 
     @RequestMapping("/search")
     @GlobalInterceptor
-    public ResponseVO search(HttpServletRequest request, @NotEmpty String cantactId){
+    public ResponseVO search(HttpServletRequest request, @NotEmpty String contactId){
         TokenUserInfoDto tokenUserInfo = getTokenUserInfo(request);
-        UserContactSearchResultDto resultDto = this.userContactService.searchContact(tokenUserInfo.getUserId(), cantactId);
+        UserContactSearchResultDto resultDto = this.userContactService.searchContact(tokenUserInfo.getUserId(), contactId);
         return getSuccessResponseVO(resultDto);
     }
 
