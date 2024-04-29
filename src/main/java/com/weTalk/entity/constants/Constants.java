@@ -24,6 +24,8 @@ public class Constants {
 
     public static final String COVER_IMAGE_SUFFIX = "_cover.png";
 
+    public static final String APPLY_INFO_TEMPLATE = "我是%s";
+
     public static final Integer REDIS_TIME_1MIN = 60;
 
     public static final Integer REDIS_KEY_EXPIRES_DAY = REDIS_TIME_1MIN * 60 * 24;

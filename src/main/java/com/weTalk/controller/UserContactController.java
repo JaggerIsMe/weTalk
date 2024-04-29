@@ -27,12 +27,33 @@ public class UserContactController extends ABaseController{
     @Resource
     private UserContactApplyService userContactApplyService;
 
+    /**
+     * 搜索好友或群组
+     * @param request
+     * @param contactId
+     * @return
+     */
     @RequestMapping("/search")
     @GlobalInterceptor
     public ResponseVO search(HttpServletRequest request, @NotEmpty String contactId){
-        TokenUserInfoDto tokenUserInfo = getTokenUserInfo(request);
-        UserContactSearchResultDto resultDto = this.userContactService.searchContact(tokenUserInfo.getUserId(), contactId);
+        TokenUserInfoDto tokenUserInfoDto = getTokenUserInfo(request);
+        UserContactSearchResultDto resultDto = this.userContactService.searchContact(tokenUserInfoDto.getUserId(), contactId);
         return getSuccessResponseVO(resultDto);
+    }
+
+    /**
+     * 申请添加好友或群组
+     * @param request
+     * @param contactId
+     * @param applyInfo
+     * @return
+     */
+    @RequestMapping("/applyAdd")
+    @GlobalInterceptor
+    public ResponseVO applyAdd(HttpServletRequest request, @NotEmpty String contactId, String applyInfo){
+        TokenUserInfoDto tokenUserInfoDto = getTokenUserInfo(request);
+        Integer joinType = this.userContactService.applyAdd(tokenUserInfoDto, contactId, applyInfo);
+        return getSuccessResponseVO(joinType);
     }
 
 }

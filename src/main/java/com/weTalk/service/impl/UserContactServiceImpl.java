@@ -4,26 +4,27 @@ import java.util.List;
 
 import javax.annotation.Resource;
 
+import com.weTalk.dto.TokenUserInfoDto;
 import com.weTalk.dto.UserContactSearchResultDto;
-import com.weTalk.entity.enums.UserContactStatusEnum;
-import com.weTalk.entity.enums.UserContcatTypeEnum;
+import com.weTalk.entity.constants.Constants;
+import com.weTalk.entity.enums.*;
 import com.weTalk.entity.po.GroupInfo;
+import com.weTalk.entity.po.UserContactApply;
 import com.weTalk.entity.po.UserInfo;
-import com.weTalk.entity.query.GroupInfoQuery;
-import com.weTalk.entity.query.UserInfoQuery;
+import com.weTalk.entity.query.*;
+import com.weTalk.exception.BusinessException;
 import com.weTalk.mappers.GroupInfoMapper;
+import com.weTalk.mappers.UserContactApplyMapper;
 import com.weTalk.mappers.UserInfoMapper;
 import com.weTalk.utils.CopyTools;
 import org.springframework.stereotype.Service;
 
-import com.weTalk.entity.enums.PageSize;
-import com.weTalk.entity.query.UserContactQuery;
 import com.weTalk.entity.po.UserContact;
 import com.weTalk.entity.vo.PaginationResultVO;
-import com.weTalk.entity.query.SimplePage;
 import com.weTalk.mappers.UserContactMapper;
 import com.weTalk.service.UserContactService;
 import com.weTalk.utils.StringTools;
+import org.springframework.transaction.annotation.Transactional;
 
 
 /**
@@ -40,6 +41,9 @@ public class UserContactServiceImpl implements UserContactService {
 
     @Resource
     private GroupInfoMapper<GroupInfo, GroupInfoQuery> groupInfoMapper;
+
+    @Resource
+    private UserContactApplyMapper<UserContactApply, UserContactApplyQuery> userContactApplyMapper;
 
     /**
      * 根据条件查询列表
@@ -146,7 +150,8 @@ public class UserContactServiceImpl implements UserContactService {
 
     /**
      * 搜索联系人或群
-     * @param userId 发起搜索的ID
+     *
+     * @param userId    发起搜索的ID
      * @param contactId 被搜索的ID
      * @return
      */
@@ -186,5 +191,99 @@ public class UserContactServiceImpl implements UserContactService {
         resultDto.setStatus(userContact == null ? null : userContact.getStatus());
 
         return resultDto;
+    }
+
+    /**
+     * 申请添加好友或群组
+     *
+     * @param tokenUserInfoDto
+     * @param contactId
+     * @param applyInfo
+     * @return
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Integer applyAdd(TokenUserInfoDto tokenUserInfoDto, String contactId, String applyInfo) {
+        UserContcatTypeEnum typeEnum = UserContcatTypeEnum.getByPrefix(contactId);
+        if (null == typeEnum) {
+            throw new BusinessException(ResponseCodeEnum.CODE_600);
+        }
+        //申请人
+        String applyUserId = tokenUserInfoDto.getUserId();
+        //默认申请信息
+        applyInfo = StringTools.isEmpty(applyInfo) ? String.format(Constants.APPLY_INFO_TEMPLATE, tokenUserInfoDto.getNickName()) : applyInfo;
+
+        Long curTime = System.currentTimeMillis();
+
+        Integer joinType = null;
+        String receiveUserId = contactId;
+
+        UserContact userContact = this.userContactMapper.selectByUserIdAndContactId(applyUserId, contactId);
+        //查询是否已经添加对方为好友或是否已经加入该群聊
+        if (null != userContact && UserContactStatusEnum.FRIEND.getStatus().equals(userContact.getStatus())) {
+            switch (typeEnum) {
+                case USER:
+                    throw new BusinessException("对方已经是你的好友");
+                case GROUP:
+                    throw new BusinessException("你已经加入该群聊");
+            }
+        }
+        //查询是否已被对方拉黑
+        if (null != userContact && UserContactStatusEnum.BLACK_BY_FRIEND.getStatus().equals(userContact.getStatus())) {
+            throw new BusinessException("对方已将你拉黑，无法添加");
+        }
+
+        //如果是申请加群操作，先判断该群的状态或存不存在
+        //然后将接收申请通知的对象Id设为该群的群主Id，并设置加群方式类型
+        if (UserContcatTypeEnum.GROUP == typeEnum) {
+            GroupInfo groupInfo = groupInfoMapper.selectByGroupId(contactId);
+            if (groupInfo == null || GroupStatusEnum.DISSOLUTION.getStatus().equals(groupInfo.getStatus())) {
+                throw new BusinessException("群聊不存在或已解散");
+            }
+            receiveUserId = groupInfo.getGroupOwnerId();
+            joinType = groupInfo.getJoinType();
+        } else {
+            //如果是申请加好友操作，获取好友信息，设置加好友方式类型
+            UserInfo userInfo = userInfoMapper.selectByUserId(contactId);
+            if (null == userInfo) {
+                throw new BusinessException(ResponseCodeEnum.CODE_600);
+            }
+            joinType = userInfo.getJoinType();
+        }
+        //如果加群方式类型或加好友方式类型是直接通过不用审核
+        if (JoinTypeEnum.NO_APPLY.getType().equals(joinType)) {
+            //TODO 添加联系人
+
+            return joinType;
+        }
+
+        UserContactApply dbApply = this.userContactApplyMapper.selectByApplyUserIdAndReceiveUserIdAndContactId(applyUserId, receiveUserId, contactId);
+        //查询之前是否已经发送过申请
+        if (null == dbApply) {
+            //第一次发送申请
+            UserContactApply contactApply = new UserContactApply();
+            contactApply.setApplyUserId(applyUserId);
+            contactApply.setContactType(typeEnum.getType());
+            contactApply.setReceiveUserId(receiveUserId);
+            contactApply.setLastApplyTime(curTime);
+            contactApply.setContactId(contactId);
+            contactApply.setStatus(UserContactApplyStatusEnum.WAIT.getStatus());
+            contactApply.setApplyInfo(applyInfo);
+            this.userContactApplyMapper.insert(contactApply);
+        } else {
+            //之前发送过申请，更新状态
+            UserContactApply contactApply = new UserContactApply();
+            contactApply.setStatus(UserContactApplyStatusEnum.WAIT.getStatus());
+            contactApply.setLastApplyTime(curTime);
+            contactApply.setApplyInfo(applyInfo);
+            this.userContactApplyMapper.updateByApplyId(contactApply, dbApply.getApplyId());
+        }
+
+        if (null == dbApply || !UserContactApplyStatusEnum.WAIT.getStatus().equals(dbApply.getStatus())) {
+            //TODO 发送WebSocket信息
+
+        }
+
+        return joinType;
     }
 }

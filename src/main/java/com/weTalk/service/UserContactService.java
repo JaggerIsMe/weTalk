@@ -2,6 +2,7 @@ package com.weTalk.service;
 
 import java.util.List;
 
+import com.weTalk.dto.TokenUserInfoDto;
 import com.weTalk.dto.UserContactSearchResultDto;
 import com.weTalk.entity.query.UserContactQuery;
 import com.weTalk.entity.po.UserContact;
@@ -76,5 +77,16 @@ public interface UserContactService {
 	 * @param contactId 被搜索的ID
 	 */
 	UserContactSearchResultDto searchContact(String userId, String contactId);
+
+	/**
+	 * 申请添加好友或群组
+	 * Integer 返回加入的类型JoinTypeEnum 是直接添加成功还是等待审核中
+	 * 返回的值用于前端的页面跳转
+	 * @param tokenUserInfoDto
+	 * @param contactId
+	 * @param applyInfo
+	 * @return
+	 */
+	Integer applyAdd(TokenUserInfoDto tokenUserInfoDto, String contactId, String applyInfo);
 
 }
