@@ -53,7 +53,7 @@ public class ABaseController {
 
     /**
      * 在HttpServletRequest里获取请求头里的token
-     * 在从Redis里取出用户信息
+     * 再从Redis里取出用户信息
      * @param request
      * @return
      */

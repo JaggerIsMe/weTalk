@@ -2,6 +2,7 @@ package com.weTalk.service;
 
 import java.util.List;
 
+import com.weTalk.dto.UserContactSearchResultDto;
 import com.weTalk.entity.query.UserContactQuery;
 import com.weTalk.entity.po.UserContact;
 import com.weTalk.entity.vo.PaginationResultVO;
@@ -68,5 +69,12 @@ public interface UserContactService {
 	 * 根据UserIdAndContactId删除
 	 */
 	Integer deleteUserContactByUserIdAndContactId(String userId,String contactId);
+
+	/**
+	 *搜索联系人或群
+	 * @param userId 发起搜索的ID
+	 * @param contactId 被搜索的ID
+	 */
+	UserContactSearchResultDto searchContact(String userId, String contactId);
 
 }
