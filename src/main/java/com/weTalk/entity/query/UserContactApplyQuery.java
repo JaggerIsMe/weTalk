@@ -56,6 +56,17 @@ public class UserContactApplyQuery extends BaseParam {
 
 	private String applyInfoFuzzy;
 
+	/**
+	 * 是否要进行user_contact_apply表和user_info表(或group_info表)的链接查询
+	 * 以获取申请人的nick_name(或群组的group_name)
+	 * 该属性不在数据库表设计里
+	 *
+	 * 注意！注意！！注意！！！
+	 * 在命名属性时最好不要以is开头
+	 * 例如本属性若命名为isQueryContactInfo则myBatis会发生NoSuchPropertyException异常
+	 *
+	 */
+	private Boolean queryContactInfo;
 
 	public void setApplyId(Integer applyId){
 		this.applyId = applyId;
@@ -153,4 +164,11 @@ public class UserContactApplyQuery extends BaseParam {
 		return this.applyInfoFuzzy;
 	}
 
+	public Boolean getQueryContactInfo() {
+		return queryContactInfo;
+	}
+
+	public void setQueryContactInfo(Boolean queryContactInfo) {
+		this.queryContactInfo = queryContactInfo;
+	}
 }

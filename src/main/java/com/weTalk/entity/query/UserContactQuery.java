@@ -55,8 +55,11 @@ public class UserContactQuery extends BaseParam {
 	 * 是否要进行user_contact表和user_info表的链接查询
 	 * 以查询群员的信息
 	 * 该属性不在数据库表设计里
+	 *
+	 * 注意！注意！！注意！！！
+	 * 在命名属性时最好不要以is开头
 	 */
-	private Boolean isQueryUserInfo;
+	private Boolean queryUserInfo;
 
 
 	public void setUserId(String userId){
@@ -154,10 +157,10 @@ public class UserContactQuery extends BaseParam {
 	}
 
 	public Boolean getQueryUserInfo() {
-		return isQueryUserInfo;
+		return queryUserInfo;
 	}
 
 	public void setQueryUserInfo(Boolean queryUserInfo) {
-		isQueryUserInfo = queryUserInfo;
+		this.queryUserInfo = queryUserInfo;
 	}
 }

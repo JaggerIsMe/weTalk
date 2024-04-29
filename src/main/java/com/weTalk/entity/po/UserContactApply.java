@@ -50,6 +50,14 @@ public class UserContactApply implements Serializable {
 	 */
 	private String applyInfo;
 
+	/**
+	 * 该属性是user_contact_apply表和user_info表(或group_info表)的链接查询后
+	 * 获得的申请人的nick_name(或群组的group_name)
+	 *
+	 * 该属性不在数据库表设计里
+	 */
+	private String contactName;
+
 
 	public void setApplyId(Integer applyId){
 		this.applyId = applyId;
@@ -113,6 +121,14 @@ public class UserContactApply implements Serializable {
 
 	public String getApplyInfo(){
 		return this.applyInfo;
+	}
+
+	public String getContactName() {
+		return contactName;
+	}
+
+	public void setContactName(String contactName) {
+		this.contactName = contactName;
 	}
 
 	@Override
