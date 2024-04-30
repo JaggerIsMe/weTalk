@@ -1,5 +1,6 @@
 package com.weTalk.controller;
 
+import com.sun.istack.internal.NotNull;
 import com.weTalk.annotation.GlobalInterceptor;
 import com.weTalk.dto.TokenUserInfoDto;
 import com.weTalk.dto.UserContactSearchResultDto;
@@ -83,6 +84,14 @@ public class UserContactController extends ABaseController {
         applyQuery.setQueryContactInfo(true);
         PaginationResultVO resultVO = userContactApplyService.findListByPage(applyQuery);
         return getSuccessResponseVO(resultVO);
+    }
+
+    @RequestMapping("/dealWithApply")
+    @GlobalInterceptor
+    public ResponseVO dealWithApply(HttpServletRequest request, @NotNull Integer applyId, @NotNull Integer status) {
+        TokenUserInfoDto tokenUserInfoDto = getTokenUserInfo(request);
+        this.userContactApplyService.dealWithApply(tokenUserInfoDto.getUserId(), applyId, status);
+        return getSuccessResponseVO(null);
     }
 
 }

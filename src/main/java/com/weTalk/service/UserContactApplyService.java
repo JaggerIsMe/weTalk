@@ -87,4 +87,12 @@ public interface UserContactApplyService {
 	 */
 	Integer deleteUserContactApplyByApplyUserIdAndReceiveUserIdAndContactId(String applyUserId,String receiveUserId,String contactId);
 
+	/**
+	 * 处理加好友或加群请求
+	 * @param userId
+	 * @param applyId
+	 * @param status
+	 */
+	void dealWithApply(String userId, Integer applyId, Integer status);
+
 }
