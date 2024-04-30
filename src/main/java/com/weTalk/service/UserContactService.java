@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.weTalk.dto.TokenUserInfoDto;
 import com.weTalk.dto.UserContactSearchResultDto;
+import com.weTalk.entity.enums.UserContactStatusEnum;
 import com.weTalk.entity.query.UserContactQuery;
 import com.weTalk.entity.po.UserContact;
 import com.weTalk.entity.vo.PaginationResultVO;
@@ -88,5 +89,23 @@ public interface UserContactService {
 	 * @return
 	 */
 	Integer applyAdd(TokenUserInfoDto tokenUserInfoDto, String contactId, String applyInfo);
+
+	/**
+	 * 添加联系人
+	 * @param appleUserId
+	 * @param receiveUserId
+	 * @param contactId
+	 * @param contactType
+	 * @param applyInfo
+	 */
+	void addContact(String appleUserId, String receiveUserId, String contactId, Integer contactType, String applyInfo);
+
+	/**
+	 * 删除或拉黑联系人
+	 * @param userId
+	 * @param contactId
+	 * @param statusEnum
+	 */
+	void removeUserContact(String userId, String contactId, UserContactStatusEnum statusEnum);
 
 }

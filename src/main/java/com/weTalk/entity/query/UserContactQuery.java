@@ -81,7 +81,7 @@ public class UserContactQuery extends BaseParam {
 	private Boolean queryExcludeMyGroup;
 
 	/**
-	 * 获取好友列表时要根据好友状态筛选掉一些不应该出现的好友
+	 * 获取联系人列表时要根据联系人状态筛选掉一些不应该出现在联系人列表的好友
 	 */
 	private Integer[] queryStatusArray;
 

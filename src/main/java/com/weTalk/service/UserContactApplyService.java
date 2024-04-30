@@ -95,14 +95,4 @@ public interface UserContactApplyService {
 	 */
 	void dealWithApply(String userId, Integer applyId, Integer status);
 
-	/**
-	 * 添加联系人
-	 * @param appleUserId
-	 * @param receiveUserId
-	 * @param contactId
-	 * @param contactType
-	 * @param applyInfo
-	 */
-	void addContact(String appleUserId, String receiveUserId, String contactId, Integer contactType, String applyInfo);
-
 }
