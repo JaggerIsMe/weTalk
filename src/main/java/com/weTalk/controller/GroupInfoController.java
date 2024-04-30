@@ -137,7 +137,7 @@ public class GroupInfoController extends ABaseController {
         UserContactQuery userContactQuery = new UserContactQuery();
         userContactQuery.setContactId(groupId);
 
-        //为true则进行user_contact表和user_info表的链接查询，获取群组和群员的信息
+        //为true则进行user_contact表和user_info表的链接查询，获取群员的信息
         userContactQuery.setQueryUserInfo(true);
 
         userContactQuery.setOrderBy("create_time asc");

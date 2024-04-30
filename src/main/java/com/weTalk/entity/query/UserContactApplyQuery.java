@@ -45,7 +45,7 @@ public class UserContactApplyQuery extends BaseParam {
 	private Long lastApplyTime;
 
 	/**
-	 * 状态 0:待处理 1:已同意 2:已拒绝 3:已被拉黑
+	 * 状态 0:待处理 1:已同意 2:已拒绝 3:已被拉
 	 */
 	private Integer status;
 

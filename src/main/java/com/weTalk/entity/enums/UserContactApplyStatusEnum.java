@@ -6,7 +6,7 @@ public enum UserContactApplyStatusEnum {
     WAIT(0, "待处理"),
     PASS(1, "已同意"),
     REJECT(2, "已拒绝"),
-    BLACK(3, "已被拉黑");
+    BLACK(3, "已拉黑");
 
     private Integer status;
     private String desc;

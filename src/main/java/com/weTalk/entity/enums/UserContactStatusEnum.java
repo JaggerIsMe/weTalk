@@ -11,7 +11,8 @@ public enum UserContactStatusEnum {
     DEL_FRIEND(2, "已删除的好友"),
     DEL_BY_FRIEND(3, "已被该好友删除"),
     BLACK_FRIEND(4, "已拉黑的好友"),
-    BLACK_BY_FRIEND(5, "已被该好友拉黑");
+    BLACK_BY_FRIEND(5, "已被该好友拉黑"),
+    BLACK_BY_FRIEND_FIRST(6, "申请时被该好友拉黑");
 
     private Integer status;
     private String desc;

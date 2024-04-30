@@ -1,20 +1,21 @@
 package com.weTalk.service.impl;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 import javax.annotation.Resource;
 
-import com.weTalk.entity.enums.ResponseCodeEnum;
-import com.weTalk.entity.enums.UserContactApplyStatusEnum;
-import com.weTalk.entity.enums.UserContactStatusEnum;
+import com.weTalk.dto.SysSettingDto;
+import com.weTalk.entity.enums.*;
 import com.weTalk.entity.po.UserContact;
 import com.weTalk.entity.query.UserContactQuery;
 import com.weTalk.exception.BusinessException;
 import com.weTalk.mappers.UserContactMapper;
+import com.weTalk.redis.RedisComponent;
 import org.springframework.stereotype.Service;
 
-import com.weTalk.entity.enums.PageSize;
 import com.weTalk.entity.query.UserContactApplyQuery;
 import com.weTalk.entity.po.UserContactApply;
 import com.weTalk.entity.vo.PaginationResultVO;
@@ -36,6 +37,9 @@ public class UserContactApplyServiceImpl implements UserContactApplyService {
 
     @Resource
     private UserContactMapper<UserContact, UserContactQuery> userContactMapper;
+
+    @Resource
+    private RedisComponent redisComponent;
 
     /**
      * 根据条件查询列表
@@ -201,7 +205,7 @@ public class UserContactApplyServiceImpl implements UserContactApplyService {
         }
 
         if (UserContactApplyStatusEnum.PASS==statusEnum) {
-            //TODO 添加联系人
+            this.addContact(applyInfo.getApplyUserId(), applyInfo.getReceiveUserId(), applyInfo.getContactId(), applyInfo.getContactType(), applyInfo.getApplyInfo());
             return;
         }
 
@@ -212,10 +216,56 @@ public class UserContactApplyServiceImpl implements UserContactApplyService {
             userContact.setContactId(applyInfo.getContactId());
             userContact.setContactType(applyInfo.getContactType());
             userContact.setCreateTime(curDate);
-            userContact.setStatus(UserContactStatusEnum.BLACK_BY_FRIEND.getStatus());
+            //在待处理申请列表里（也就是在新的朋友列表里）拉黑对方的请求
+            userContact.setStatus(UserContactStatusEnum.BLACK_BY_FRIEND_FIRST.getStatus());
             userContact.setLastUpdateTime(curDate);
             userContactMapper.insertOrUpdate(userContact);
         }
+
+    }
+
+    @Override
+    public void addContact(String appleUserId, String receiveUserId, String contactId, Integer contactType, String applyInfo) {
+        //加群 判断群有没有满
+        if (UserContcatTypeEnum.GROUP.getType().equals(contactType)){
+            UserContactQuery userContactQuery = new UserContactQuery();
+            userContactQuery.setContactId(contactId);
+            userContactQuery.setStatus(UserContactStatusEnum.FRIEND.getStatus());
+            Integer count = userContactMapper.selectCount(userContactQuery);
+            SysSettingDto sysSettingDto = redisComponent.getSysSetting();
+            if (count>=sysSettingDto.getMaxGroupMemberCount()){
+                throw new BusinessException("该群成员已满，无法加入");
+            }
+        }
+        Date curDate = new Date();
+        //若同意，双方添加好友
+        List<UserContact> contactList  = new ArrayList<>();
+        //申请人添加对方
+        UserContact userContact = new UserContact();
+        userContact.setUserId(appleUserId);
+        userContact.setContactId(contactId);
+        userContact.setContactType(contactType);
+        userContact.setCreateTime(curDate);
+        userContact.setLastUpdateTime(curDate);
+        userContact.setStatus(UserContactStatusEnum.FRIEND.getStatus());
+        contactList.add(userContact);
+        //如果是申请好友，接受人也要添加申请人；如果是申请加群，则接受人不需要添加申请人
+        if (UserContcatTypeEnum.USER.getType().equals(contactType)) {
+            userContact = new UserContact();
+            userContact.setUserId(receiveUserId);
+            userContact.setContactId(appleUserId);
+            userContact.setContactType(contactType);
+            userContact.setCreateTime(curDate);
+            userContact.setLastUpdateTime(curDate);
+            userContact.setStatus(UserContactStatusEnum.FRIEND.getStatus());
+            contactList.add(userContact);
+        }
+        //批量插入
+        userContactMapper.insertOrUpdateBatch(contactList);
+
+        //TODO 如果是好友，接受人也添加申请人为好友 添加缓存
+
+        //TODO 创建会话 发送消息
 
     }
 }

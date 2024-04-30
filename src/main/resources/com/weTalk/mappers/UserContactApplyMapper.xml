@@ -17,7 +17,7 @@
 		<result column="contact_id" property="contactId"  />
 		<!--最后申请时间-->
 		<result column="last_apply_time" property="lastApplyTime"  />
-		<!--状态 0:待处理 1:已同意 2:已拒绝 3:已被拉黑-->
+		<!--状态 0:待处理 1:已同意 2:已拒绝 3:已拉黑-->
 		<result column="status" property="status"  />
 		<!--申请信息-->
 		<result column="apply_info" property="applyInfo"  />

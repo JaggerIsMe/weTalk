@@ -16,7 +16,9 @@ import com.weTalk.exception.BusinessException;
 import com.weTalk.mappers.GroupInfoMapper;
 import com.weTalk.mappers.UserContactApplyMapper;
 import com.weTalk.mappers.UserInfoMapper;
+import com.weTalk.service.UserContactApplyService;
 import com.weTalk.utils.CopyTools;
+import jodd.util.ArraysUtil;
 import org.springframework.stereotype.Service;
 
 import com.weTalk.entity.po.UserContact;
@@ -44,6 +46,9 @@ public class UserContactServiceImpl implements UserContactService {
 
     @Resource
     private UserContactApplyMapper<UserContactApply, UserContactApplyQuery> userContactApplyMapper;
+
+    @Resource
+    private UserContactApplyService userContactApplyService;
 
     /**
      * 根据条件查询列表
@@ -229,7 +234,11 @@ public class UserContactServiceImpl implements UserContactService {
             }
         }
         //查询是否已被对方拉黑
-        if (null != userContact && UserContactStatusEnum.BLACK_BY_FRIEND.getStatus().equals(userContact.getStatus())) {
+        if (null != userContact &&
+                ArraysUtil.contains(new Integer[]{
+                        UserContactStatusEnum.BLACK_BY_FRIEND.getStatus(),
+                        UserContactStatusEnum.BLACK_BY_FRIEND_FIRST.getStatus()
+                }, userContact.getStatus())) {
             throw new BusinessException("对方已将你拉黑，无法添加");
         }
 
@@ -252,8 +261,7 @@ public class UserContactServiceImpl implements UserContactService {
         }
         //如果加群方式类型或加好友方式类型是直接通过不用审核
         if (JoinTypeEnum.NO_APPLY.getType().equals(joinType)) {
-            //TODO 添加联系人
-
+            userContactApplyService.addContact(applyUserId, receiveUserId, contactId, typeEnum.getType(), applyInfo);
             return joinType;
         }
 
