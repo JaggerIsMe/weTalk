@@ -3,20 +3,16 @@ package com.weTalk.controller;
 import com.weTalk.annotation.GlobalInterceptor;
 import com.weTalk.entity.enums.ResponseCodeEnum;
 import com.weTalk.entity.po.GroupInfo;
-import com.weTalk.entity.po.UserInfoBeauty;
 import com.weTalk.entity.query.GroupInfoQuery;
-import com.weTalk.entity.query.UserInfoBeautyQuery;
 import com.weTalk.entity.vo.PaginationResultVO;
 import com.weTalk.entity.vo.ResponseVO;
 import com.weTalk.exception.BusinessException;
 import com.weTalk.service.GroupInfoService;
-import com.weTalk.service.UserInfoBeautyService;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
 import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
 
 @RestController
 @RequestMapping("/admin")
