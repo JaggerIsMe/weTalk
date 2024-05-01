@@ -1,11 +1,13 @@
 package com.weTalk.service;
 
+import java.io.IOException;
 import java.util.List;
 
 import com.weTalk.dto.TokenUserInfoDto;
 import com.weTalk.entity.query.UserInfoQuery;
 import com.weTalk.entity.po.UserInfo;
 import com.weTalk.entity.vo.PaginationResultVO;
+import org.springframework.web.multipart.MultipartFile;
 
 
 /**
@@ -97,4 +99,12 @@ public interface UserInfoService {
 	 * 登录
 	 */
 	TokenUserInfoDto login(String email, String password);
+
+	/**
+	 * 更新用户信息
+	 * @param userInfo
+	 * @param avatarFile
+	 * @param avatarCover
+	 */
+    void updateByUserInfo(UserInfo userInfo, MultipartFile avatarFile, MultipartFile avatarCover) throws IOException;
 }

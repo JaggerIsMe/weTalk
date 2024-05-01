@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.annotation.Resource;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.Pattern;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -100,7 +101,7 @@ public class AccountController extends ABaseController {
     @RequestMapping("/login")
     public ResponseVO login(@NotEmpty String checkCodeKey,
                                @NotEmpty @Email String email,
-                               @NotEmpty String password,
+                               @NotEmpty @Pattern(regexp = Constants.REGEX_PASSWORD) String password,
                                @NotEmpty String checkCode) {
         try {
             if (!checkCode.equalsIgnoreCase((String) redisUtils.get(Constants.REDIS_KEY_CHECK_CODE + checkCodeKey))) {

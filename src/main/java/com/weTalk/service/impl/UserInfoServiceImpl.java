@@ -1,5 +1,7 @@
 package com.weTalk.service.impl;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 
@@ -24,6 +26,7 @@ import com.weTalk.mappers.UserInfoMapper;
 import com.weTalk.service.UserInfoService;
 import com.weTalk.utils.StringTools;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 
 /**
@@ -173,6 +176,7 @@ public class UserInfoServiceImpl implements UserInfoService {
 
     /**
      * 注册
+     *
      * @param email
      * @param password
      * @param nickName
@@ -217,6 +221,7 @@ public class UserInfoServiceImpl implements UserInfoService {
 
     /**
      * 登录
+     *
      * @param email
      * @param password
      * @return
@@ -227,12 +232,12 @@ public class UserInfoServiceImpl implements UserInfoService {
         if (null == userInfo || !userInfo.getPassword().equals(password)) {
             throw new BusinessException("账号或密码错误");
         }
-        if (UserStatusEnum.DISABLE.getStatus().equals(userInfo.getStatus())){
+        if (UserStatusEnum.DISABLE.getStatus().equals(userInfo.getStatus())) {
             throw new BusinessException("账号已禁用");
         }
 
         Long lastHeartBeat = redisComponent.getUserHeartBeat(userInfo.getUserId());
-        if (null != lastHeartBeat){
+        if (null != lastHeartBeat) {
             throw new BusinessException("此账号已在别处登录，请退出后重试");
         }
 
@@ -242,7 +247,7 @@ public class UserInfoServiceImpl implements UserInfoService {
         TokenUserInfoDto tokenUserInfoDto = getTokenUserInfoDto(userInfo);
 
         //保存登录信息到Redis中
-        String token = StringTools.encodeByMd5(tokenUserInfoDto.getUserId()+StringTools.createRandomStr(Constants.LENGTH_20));
+        String token = StringTools.encodeByMd5(tokenUserInfoDto.getUserId() + StringTools.createRandomStr(Constants.LENGTH_20));
         tokenUserInfoDto.setToken(token);
         redisComponent.saveTokenUserInfoDto(tokenUserInfoDto);
 
@@ -252,6 +257,7 @@ public class UserInfoServiceImpl implements UserInfoService {
 
     /**
      * 由UserInfo获取Token对象
+     *
      * @param userInfo
      * @return
      */
@@ -269,4 +275,35 @@ public class UserInfoServiceImpl implements UserInfoService {
         return tokenUserInfoDto;
     }
 
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void updateByUserInfo(UserInfo userInfo, MultipartFile avatarFile, MultipartFile avatarCover) throws IOException {
+        if (null != avatarFile) {
+            String baseFolder = appConfig.getProjectFolder() + Constants.FILE_FOLDER_FILE;
+            File targetFileFolder = new File(baseFolder + Constants.FILE_FOLDER_AVATAR_NAME);
+            if (!targetFileFolder.exists()) {
+                targetFileFolder.mkdirs();
+            }
+            String filePath = targetFileFolder.getPath() + "/" + userInfo.getUserId() + Constants.IMAGE_SUFFIX;
+            avatarFile.transferTo(new File(filePath));
+            avatarCover.transferTo(new File(filePath + Constants.COVER_IMAGE_SUFFIX));
+        }
+        //查询获取更新前的用户信息，保存下来
+        UserInfo dbInfo = this.userInfoMapper.selectByUserId(userInfo.getUserId());
+        //更新用户信息
+        this.userInfoMapper.updateByUserId(userInfo, userInfo.getUserId());
+        /**
+         * 上面的小细节
+         * 先查询后更新的小细节：
+         * 先查询后更新，事务开启的时间就比较短
+         * 查询时不会开启事务，更新时才会开启事务
+         * 如果先更新，开启事务，然后再查询，如果查询耗时较长，可能导致事务超时
+         */
+        String contactNameUpdate = null;
+        //如果更新前的名字和更新后的名字不相等
+        if (!dbInfo.getNickName().equals(userInfo.getNickName())) {
+            contactNameUpdate = userInfo.getNickName();
+        }
+        //TODO 更新会话中的昵称信息
+    }
 }

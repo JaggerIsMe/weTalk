@@ -26,6 +26,8 @@ public class Constants {
 
     public static final String APPLY_INFO_TEMPLATE = "我是%s";
 
+    public static final String REGEX_PASSWORD = "^(?=.*[a-zA-Z])[\\da-zA-Z~!@#$%^&*_]{8,18}$";
+
     public static final Integer REDIS_TIME_1MIN = 60;
 
     public static final Integer REDIS_KEY_EXPIRES_DAY = REDIS_TIME_1MIN * 60 * 24;
