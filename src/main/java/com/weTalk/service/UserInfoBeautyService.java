@@ -105,4 +105,10 @@ public interface UserInfoBeautyService {
 	 */
 	Integer deleteUserInfoBeautyByEmail(String email);
 
+	/**
+	 * 新增、修改、保存靓号
+	 * @param beautyAcc
+	 */
+	void saveAccount(UserInfoBeauty beautyAcc);
+
 }

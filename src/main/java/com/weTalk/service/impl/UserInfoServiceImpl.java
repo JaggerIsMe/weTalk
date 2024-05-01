@@ -306,4 +306,30 @@ public class UserInfoServiceImpl implements UserInfoService {
         }
         //TODO 更新会话中的昵称信息
     }
+
+    /**
+     * 更新用户状态
+     *
+     * @param status
+     * @param userId
+     */
+    @Override
+    public void updateUserStatus(Integer status, String userId) {
+        UserStatusEnum userStatusEnum = UserStatusEnum.getByStatus(status);
+        if (null == userStatusEnum) {
+            throw new BusinessException(ResponseCodeEnum.CODE_600);
+        }
+        UserInfo userInfo = new UserInfo();
+        userInfo.setStatus(userStatusEnum.getStatus());
+        this.userInfoMapper.updateByUserId(userInfo, userId);
+    }
+
+    /**
+     * 强制用户下线
+     * @param userId
+     */
+    @Override
+    public void forceOffLine(String userId) {
+        //TODO 强制用户下线
+    }
 }

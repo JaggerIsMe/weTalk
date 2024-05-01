@@ -70,7 +70,7 @@ public class UserInfoController extends ABaseController{
     }
 
     /**
-     * 更改密码
+     * 修改密码
      * @param request
      * @param password
      * @return

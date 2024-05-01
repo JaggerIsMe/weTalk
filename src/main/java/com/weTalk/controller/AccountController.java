@@ -83,7 +83,7 @@ public class AccountController extends ABaseController {
     @RequestMapping("/register")
     public ResponseVO register(@NotEmpty String checkCodeKey,
                                @NotEmpty @Email String email,
-                               @NotEmpty String password,
+                               @NotEmpty @Pattern(regexp = Constants.REGEX_PASSWORD) String password,
                                @NotEmpty String nickName,
                                @NotEmpty String checkCode) {
         try {
@@ -98,10 +98,18 @@ public class AccountController extends ABaseController {
         }
     }
 
+    /**
+     * 登录
+     * @param checkCodeKey
+     * @param email
+     * @param password
+     * @param checkCode
+     * @return
+     */
     @RequestMapping("/login")
     public ResponseVO login(@NotEmpty String checkCodeKey,
                                @NotEmpty @Email String email,
-                               @NotEmpty @Pattern(regexp = Constants.REGEX_PASSWORD) String password,
+                               @NotEmpty String password,
                                @NotEmpty String checkCode) {
         try {
             if (!checkCode.equalsIgnoreCase((String) redisUtils.get(Constants.REDIS_KEY_CHECK_CODE + checkCodeKey))) {
