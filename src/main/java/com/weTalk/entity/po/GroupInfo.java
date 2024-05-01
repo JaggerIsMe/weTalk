@@ -54,6 +54,12 @@ public class GroupInfo implements Serializable {
 	private Integer status;
 
 	/**
+	 * 群主昵称
+	 * 该属性不在数据库表设计里
+	 */
+	private String groupOwnerNickName;
+
+	/**
 	 * 群成员总数
 	 * 该属性不在数据库表设计里
 	 */
@@ -122,6 +128,14 @@ public class GroupInfo implements Serializable {
 
 	public void setMemberCount(Integer memberCount) {
 		this.memberCount = memberCount;
+	}
+
+	public String getGroupOwnerNickName() {
+		return groupOwnerNickName;
+	}
+
+	public void setGroupOwnerNickName(String groupOwnerNickName) {
+		this.groupOwnerNickName = groupOwnerNickName;
 	}
 
 	@Override

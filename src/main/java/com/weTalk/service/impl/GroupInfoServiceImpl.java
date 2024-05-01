@@ -3,10 +3,7 @@ package com.weTalk.service.impl;
 import com.weTalk.config.AppConfig;
 import com.weTalk.dto.SysSettingDto;
 import com.weTalk.entity.constants.Constants;
-import com.weTalk.entity.enums.PageSize;
-import com.weTalk.entity.enums.ResponseCodeEnum;
-import com.weTalk.entity.enums.UserContactStatusEnum;
-import com.weTalk.entity.enums.UserContcatTypeEnum;
+import com.weTalk.entity.enums.*;
 import com.weTalk.entity.po.GroupInfo;
 import com.weTalk.entity.po.UserContact;
 import com.weTalk.entity.query.GroupInfoQuery;
@@ -151,6 +148,14 @@ public class GroupInfoServiceImpl implements GroupInfoService {
         return this.groupInfoMapper.deleteByGroupId(groupId);
     }
 
+    /**
+     * 新增、修改、保存群组信息
+     *
+     * @param groupInfo
+     * @param avatarFile
+     * @param avatarCover
+     * @throws IOException
+     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void saveGroup(GroupInfo groupInfo, MultipartFile avatarFile, MultipartFile avatarCover) throws IOException {
@@ -210,7 +215,38 @@ public class GroupInfoServiceImpl implements GroupInfoService {
         }
         String filePath = targetFileFolder.getPath() + "/" + groupInfo.getGroupId() + Constants.IMAGE_SUFFIX;
         avatarFile.transferTo(new File(filePath));
-        avatarCover.transferTo(new File(filePath+Constants.COVER_IMAGE_SUFFIX));
+        avatarCover.transferTo(new File(filePath + Constants.COVER_IMAGE_SUFFIX));
 
+    }
+
+    /**
+     * 解散群组
+     *
+     * @param groupOwnerId
+     * @param groupId
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void dissolutionGroup(String groupOwnerId, String groupId) {
+        GroupInfo dbInfo = this.groupInfoMapper.selectByGroupId(groupId);
+        if (null == dbInfo || !dbInfo.getGroupOwnerId().equals(groupOwnerId)) {
+            throw new BusinessException(ResponseCodeEnum.CODE_600);
+        }
+        //删除群组
+        GroupInfo updateInfo = new GroupInfo();
+        updateInfo.setStatus(GroupStatusEnum.DISSOLUTION.getStatus());
+        this.groupInfoMapper.updateByGroupId(updateInfo, groupId);
+
+        //更新群成员的联系人信息
+        UserContactQuery userContactQuery = new UserContactQuery();
+        userContactQuery.setContactId(groupId);
+        userContactQuery.setContactType(UserContcatTypeEnum.GROUP.getType());
+
+        UserContact updateUserContact = new UserContact();
+        updateUserContact.setStatus(UserContactStatusEnum.DEL_FRIEND.getStatus());
+        this.userContactMapper.updateByParam(updateUserContact, userContactQuery);
+
+        //TODO 移除相关群员的联系人缓存
+        //TODO 发消息 1、更新会话消息 2、记录群消息 3、发送解散通知消息
     }
 }

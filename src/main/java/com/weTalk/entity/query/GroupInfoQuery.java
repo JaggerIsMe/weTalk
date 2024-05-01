@@ -56,6 +56,20 @@ public class GroupInfoQuery extends BaseParam {
 	 */
 	private Integer status;
 
+	/**
+	 * 是否要进行group_info表和user_info表的子查询
+	 * 查询群组的信息时就能获取群主昵称
+	 * 该属性不在数据库表设计里
+	 */
+	private Boolean queryGroupOwnerName;
+
+	/**
+	 * 是否要进行group_info表和contact_info表的子查询
+	 * 查询群组的信息时就能获取群员的数量
+	 * 该属性不在数据库表设计里
+	 */
+	private Boolean queryMemberCount;
+
 
 	public void setGroupId(String groupId){
 		this.groupId = groupId;
@@ -160,4 +174,19 @@ public class GroupInfoQuery extends BaseParam {
 		return this.status;
 	}
 
+	public Boolean getQueryGroupOwnerName() {
+		return queryGroupOwnerName;
+	}
+
+	public void setQueryGroupOwnerName(Boolean queryGroupOwnerName) {
+		this.queryGroupOwnerName = queryGroupOwnerName;
+	}
+
+	public Boolean getQueryMemberCount() {
+		return queryMemberCount;
+	}
+
+	public void setQueryMemberCount(Boolean queryMemberCount) {
+		this.queryMemberCount = queryMemberCount;
+	}
 }

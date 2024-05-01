@@ -3,11 +3,9 @@ package com.weTalk.controller;
 import com.weTalk.annotation.GlobalInterceptor;
 import com.weTalk.entity.po.UserInfoBeauty;
 import com.weTalk.entity.query.UserInfoBeautyQuery;
-import com.weTalk.entity.query.UserInfoQuery;
 import com.weTalk.entity.vo.PaginationResultVO;
 import com.weTalk.entity.vo.ResponseVO;
 import com.weTalk.service.UserInfoBeautyService;
-import com.weTalk.service.UserInfoService;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -16,7 +14,7 @@ import javax.validation.constraints.NotNull;
 
 @RestController
 @RequestMapping("/admin")
-public class BeautyInfoController extends ABaseController {
+public class AdminBeautyController extends ABaseController {
 
     @Resource
     private UserInfoBeautyService userInfoBeautyService;

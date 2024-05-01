@@ -72,11 +72,17 @@ public interface GroupInfoService {
 	Integer deleteGroupInfoByGroupId(String groupId);
 
 	/**
-	 * 保存群组信息
+	 * 新增、修改、保存群组信息
 	 * @param groupInfo
 	 * @param avatarFile
 	 * @param avatarCover
 	 */
 	void saveGroup(GroupInfo groupInfo, MultipartFile avatarFile, MultipartFile avatarCover) throws IOException;
 
+	/**
+	 * 解散群组
+	 * @param groupOwnerId
+	 * @param groupId
+	 */
+	void dissolutionGroup(String groupOwnerId, String groupId);
 }
