@@ -197,17 +197,28 @@ public class AppUpdateServiceImpl implements AppUpdateService {
         updateQuery.setSimplePage(new SimplePage(0, 1));
         List<AppUpdate> appUpdateList = appUpdateMapper.selectList(updateQuery);
         if (!appUpdateList.isEmpty()) {
-            AppUpdate lastest = appUpdateList.get(0);
+            //最新的历史版本
+            AppUpdate latest = appUpdateList.get(0);
             //将版本号String转换成Integer，以进行大小对比
-            Long historyVer = Long.parseLong(lastest.getVersion().replace(".", ""));
+            Long historyVer = Long.parseLong(latest.getVersion().replace(".", ""));
             Long currentVer = Long.parseLong(appUpdate.getVersion().replace(".", ""));
+
             //新增版本时必须大于历史版本
             if (null == appUpdate.getId() && currentVer <= historyVer) {
                 throw new BusinessException("当前版本必须大于历史版本");
             }
-            //修改已有版本时必须版本号只能修改为大于历史版本
-            if (null != appUpdate.getId() && currentVer <= historyVer && !appUpdate.getId().equals(lastest.getId())) {
-                throw new BusinessException("当前版本必须大于历史版本");
+
+            /**
+             * 修改已有版本时 版本号只能修改为小于最新的历史版本，不能修改为大于最新的历史版本
+             * eg. 当修改的版本不是最新的版本时，不能将其修改为大于最新的历史版本
+             *     当系统目前最新版本为1.0.8，若我们要修改已有的1.0.5的版本时，无法将其修改为1.0.9，只能修改为小于1.0.8
+             *     但我们可以将1.0.8修改为1.0.9
+             *
+             * 这就保证了我们通过id降序排列("id desc")后获得的版本号绝对就是当前最新的历史版本
+             * 避免了后续的一些不规范修改导致我们无法通过id降序排列获得最新的历史版本
+             */
+            if (null != appUpdate.getId() && currentVer >= historyVer && !appUpdate.getId().equals(latest.getId())) {
+                throw new BusinessException("修改当前版本不能大于最新历史版本");
             }
 
             AppUpdate repeatVer = appUpdateMapper.selectByVersion(appUpdate.getVersion());
@@ -260,5 +271,16 @@ public class AppUpdateServiceImpl implements AppUpdateService {
         update.setStatus(status);
         update.setGrayscaleUid(grayscaleUid);
         appUpdateMapper.updateById(update, id);
+    }
+
+    /**
+     * 获取最新版本
+     * @param appVersion
+     * @param uid
+     * @return
+     */
+    @Override
+    public AppUpdate getLatestUpdate(String appVersion, String uid) {
+        return appUpdateMapper.selectLatestUpdate(appVersion, uid);
     }
 }

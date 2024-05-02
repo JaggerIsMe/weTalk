@@ -32,6 +32,8 @@ public class Constants {
 
     public static final String APP_EXE_SUFFIX = ".exe";
 
+    public static final String APP_NAME = "WeTalkSetup.";
+
     public static final Integer REDIS_TIME_1MIN = 60;
 
     public static final Integer REDIS_KEY_EXPIRES_DAY = REDIS_TIME_1MIN * 60 * 24;

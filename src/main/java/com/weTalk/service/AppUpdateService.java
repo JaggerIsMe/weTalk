@@ -104,4 +104,12 @@ public interface AppUpdateService {
 	 */
 	void postUpdate(Integer id, Integer status, String grayscaleUid);
 
+	/**
+	 * 获取最新版本
+	 * @param appVersion
+	 * @param uid
+	 * @return
+	 */
+	AppUpdate getLatestUpdate(String appVersion, String uid);
+
 }
