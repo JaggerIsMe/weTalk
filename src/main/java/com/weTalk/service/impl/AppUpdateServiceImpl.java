@@ -135,10 +135,15 @@ public class AppUpdateServiceImpl implements AppUpdateService {
     }
 
     /**
-     * 根据Id删除
+     * 根据Id删除版本
      */
     @Override
     public Integer deleteAppUpdateById(Integer id) {
+        AppUpdate dbInfo = this.getAppUpdateById(id);
+        //已经发布的版本不能删除
+        if (!AppUpdateStatusEnum.INIT.getStatus().equals(dbInfo.getStatus())) {
+            throw new BusinessException(ResponseCodeEnum.CODE_600);
+        }
         return this.appUpdateMapper.deleteById(id);
     }
 
@@ -167,7 +172,7 @@ public class AppUpdateServiceImpl implements AppUpdateService {
     }
 
     /**
-     * 发布新版本
+     * 保存新版本
      *
      * @param appUpdate
      * @param file
@@ -177,6 +182,13 @@ public class AppUpdateServiceImpl implements AppUpdateService {
         AppUpdateFileTypeEnum fileTypeEnum = AppUpdateFileTypeEnum.getByType(appUpdate.getFileType());
         if (null == fileTypeEnum) {
             throw new BusinessException(ResponseCodeEnum.CODE_600);
+        }
+        //已经发布的版本无法修改，只能取消发布后再修改
+        if (appUpdate.getId() != null) {
+            AppUpdate dbInfo = this.getAppUpdateById(appUpdate.getId());
+            if (!AppUpdateStatusEnum.INIT.getStatus().equals(dbInfo.getStatus())) {
+                throw new BusinessException(ResponseCodeEnum.CODE_600);
+            }
         }
 
         AppUpdateQuery updateQuery = new AppUpdateQuery();
@@ -223,4 +235,30 @@ public class AppUpdateServiceImpl implements AppUpdateService {
         }
     }
 
+    /**
+     * 发布新版本
+     *
+     * @param id
+     * @param status
+     * @param grayscaleUid
+     */
+    @Override
+    public void postUpdate(Integer id, Integer status, String grayscaleUid) {
+        AppUpdateStatusEnum statusEnum = AppUpdateStatusEnum.getByStatus(status);
+        if (null == statusEnum) {
+            throw new BusinessException(ResponseCodeEnum.CODE_600);
+        }
+        //灰度发布 但没有灰度Uid  参数错误
+        if (AppUpdateStatusEnum.GRAYSCALE == statusEnum && StringTools.isEmpty(grayscaleUid)) {
+            throw new BusinessException(ResponseCodeEnum.CODE_600);
+        }
+        //不是灰度发布 但有灰度Uid参数 把灰度Uid参数置空，防止恶意渗透
+        if (AppUpdateStatusEnum.GRAYSCALE != statusEnum) {
+            grayscaleUid = "";
+        }
+        AppUpdate update = new AppUpdate();
+        update.setStatus(status);
+        update.setGrayscaleUid(grayscaleUid);
+        appUpdateMapper.updateById(update, id);
+    }
 }

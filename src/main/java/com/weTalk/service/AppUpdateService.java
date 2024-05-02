@@ -67,7 +67,7 @@ public interface AppUpdateService {
 
 
 	/**
-	 * 根据Id删除
+	 * 根据Id删除版本
 	 */
 	Integer deleteAppUpdateById(Integer id);
 
@@ -90,10 +90,18 @@ public interface AppUpdateService {
 	Integer deleteAppUpdateByVersion(String version);
 	
 	/**
-	 * 发布新版本
+	 * 保存新版本
 	 * @param appUpdate
 	 * @param file
 	 */
 	void saveUpdate(AppUpdate appUpdate, MultipartFile file) throws IOException;
+
+	/**
+	 * 发布新版本
+	 * @param id
+	 * @param status
+	 * @param grayscaleUid
+	 */
+	void postUpdate(Integer id, Integer status, String grayscaleUid);
 
 }

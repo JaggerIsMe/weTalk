@@ -36,7 +36,7 @@ public class AdminAppUpdateController extends ABaseController {
     }
 
     /**
-     * 发布新版本
+     * 保存新版本
      * @param id
      * @param version
      * @param updateDesc
@@ -60,6 +60,32 @@ public class AdminAppUpdateController extends ABaseController {
         appUpdate.setFileType(fileType);
         appUpdate.setOuterLink(outerLink);
         appUpdateService.saveUpdate(appUpdate, file);
+        return getSuccessResponseVO(null);
+    }
+
+    /**
+     * 删除更新
+     * @param id
+     * @return
+     */
+    @RequestMapping("/delUpdate")
+    @GlobalInterceptor(checkAdmin = true)
+    public ResponseVO delUpdate(@NotNull Integer id) {
+        appUpdateService.deleteAppUpdateById(id);
+        return getSuccessResponseVO(null);
+    }
+
+    /**
+     * 发布更新
+     * @param id
+     * @param status
+     * @param grayscaleUid
+     * @return
+     */
+    @RequestMapping("/postUpdate")
+    @GlobalInterceptor(checkAdmin = true)
+    public ResponseVO postUpdate(@NotNull Integer id, @NotNull Integer status, String grayscaleUid) {
+        appUpdateService.postUpdate(id, status, grayscaleUid);
         return getSuccessResponseVO(null);
     }
 
