@@ -3,6 +3,7 @@ package com.weTalk.redis;
 import com.weTalk.dto.SysSettingDto;
 import com.weTalk.dto.TokenUserInfoDto;
 import com.weTalk.entity.constants.Constants;
+import io.netty.channel.Channel;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -38,7 +39,19 @@ public class RedisComponent {
     }
 
     /**
+     * 根据token获取对应的tokenUserInfoDto信息
+     *
+     * @param token
+     * @return
+     */
+    public TokenUserInfoDto getTokenUserInfoDto(String token) {
+        TokenUserInfoDto tokenUserInfoDto = (TokenUserInfoDto) redisUtils.get(Constants.REDIS_KEY_WS_TOKEN + token);
+        return tokenUserInfoDto;
+    }
+
+    /**
      * 获取系统设置
+     *
      * @return
      */
     public SysSettingDto getSysSetting() {
@@ -49,10 +62,21 @@ public class RedisComponent {
 
     /**
      * 保存系统设置
+     *
      * @param sysSettingDto
      */
-    public void saveSysSetting(SysSettingDto sysSettingDto){
+    public void saveSysSetting(SysSettingDto sysSettingDto) {
         redisUtils.set(Constants.REDIS_KEY_SYS_SETTING, sysSettingDto);
+    }
+
+    /**
+     * 保存会话
+     *
+     * @param userId
+     * @param channel
+     */
+    public void saveChannel(String userId, Channel channel) {
+        redisUtils.set(Constants.REDIS_KEY_WS_TOKEN + userId, channel);
     }
 
 }
