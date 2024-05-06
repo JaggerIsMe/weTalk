@@ -8,6 +8,7 @@ import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
 import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 @Component("redisUtils")
@@ -74,5 +75,46 @@ public class RedisUtils<V> {
             logger.error("设置redisKey:{},value:{}失败", key, value);
             return false;
         }
+    }
+
+    public boolean expire(String key, long time){
+        try {
+            if (time>0){
+                redisTemplate.expire(key, time, TimeUnit.SECONDS);
+            }
+            return true;
+        }catch (Exception e){
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * 对List的操作
+     * @param key
+     * @param values
+     * @param time
+     * @return
+     */
+    public boolean lpushAll(String key, List<V> values, long time) {
+        try {
+            redisTemplate.opsForList().leftPushAll(key, values);
+            if (time >0){
+                expire(key, time);
+            }
+            return true;
+        }catch (Exception e){
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * 获取队列里的值
+     * @param key
+     * @return
+     */
+    public List<V> getQueueList(String key){
+        return redisTemplate.opsForList().range(key, 0, -1);
     }
 }

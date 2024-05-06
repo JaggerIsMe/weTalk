@@ -5,9 +5,7 @@ import com.weTalk.config.AppConfig;
 import com.weTalk.entity.constants.Constants;
 import com.weTalk.entity.enums.AppUpdateFileTypeEnum;
 import com.weTalk.entity.po.AppUpdate;
-import com.weTalk.entity.query.AppUpdateQuery;
 import com.weTalk.entity.vo.AppUpdateVO;
-import com.weTalk.entity.vo.PaginationResultVO;
 import com.weTalk.entity.vo.ResponseVO;
 import com.weTalk.service.AppUpdateService;
 import com.weTalk.utils.CopyTools;
@@ -37,7 +35,7 @@ public class UpdateController extends ABaseController {
      * @return
      */
     @RequestMapping("/checkVersion")
-    @GlobalInterceptor(checkAdmin = true)
+    @GlobalInterceptor
     public ResponseVO checkVersion(String appVersion, String uid) {
         //没有可更新版本
         if (StringTools.isEmpty(appVersion)) {

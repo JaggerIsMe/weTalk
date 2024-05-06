@@ -7,6 +7,7 @@ import io.netty.channel.Channel;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 @Component("redisComponent")
 public class RedisComponent {
@@ -23,6 +24,24 @@ public class RedisComponent {
      */
     public Long getUserHeartBeat(String userId) {
         return (Long) redisUtils.get(Constants.REDIS_KEY_WS_USER_HEARTBEAT + userId);
+    }
+
+    /**
+     * 保存用户心跳
+     *
+     * @param userId
+     */
+    public void saveUserHeartBeat(String userId) {
+        redisUtils.setex(Constants.REDIS_KEY_WS_USER_HEARTBEAT + userId, System.currentTimeMillis(), Constants.REDIS_KEY_EXPIRES_HEART_BEAT);
+    }
+
+    /**
+     * 用户离线 删除用户心跳
+     *
+     * @param userId
+     */
+    public void removeUserHeartBeat(String userId) {
+        redisUtils.delete(Constants.REDIS_KEY_WS_USER_HEARTBEAT + userId);
     }
 
     /**
@@ -70,13 +89,32 @@ public class RedisComponent {
     }
 
     /**
-     * 保存会话
+     * 清空用户联系人列表缓存
      *
      * @param userId
-     * @param channel
      */
-    public void saveChannel(String userId, Channel channel) {
-        redisUtils.set(Constants.REDIS_KEY_WS_TOKEN + userId, channel);
+    public void cleanUserContact(String userId) {
+        redisUtils.delete(Constants.REDIS_KEY_USER_CONTACT + userId);
+    }
+
+    /**
+     * 添加用户联系人列表缓存
+     *
+     * @param userId
+     * @param contactIdList
+     */
+    public void addUserContactBatch(String userId, List<String> contactIdList) {
+        redisUtils.lpushAll(Constants.REDIS_KEY_USER_CONTACT + userId, contactIdList, Constants.REDIS_KEY_TOKEN_EXPIRES);
+    }
+
+    /**
+     * 获取用户联系人列表
+     *
+     * @param userId
+     * @return
+     */
+    public List<String> getUserContactList(String userId) {
+        return (List<String>) redisUtils.getQueueList(Constants.REDIS_KEY_USER_CONTACT + userId);
     }
 
 }

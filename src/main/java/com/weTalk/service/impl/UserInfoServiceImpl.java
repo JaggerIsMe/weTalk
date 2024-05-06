@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 
@@ -11,10 +12,14 @@ import com.weTalk.config.AppConfig;
 import com.weTalk.dto.TokenUserInfoDto;
 import com.weTalk.entity.constants.Constants;
 import com.weTalk.entity.enums.*;
+import com.weTalk.entity.po.UserContact;
 import com.weTalk.entity.po.UserInfoBeauty;
+import com.weTalk.entity.query.UserContactQuery;
 import com.weTalk.exception.BusinessException;
+import com.weTalk.mappers.UserContactMapper;
 import com.weTalk.mappers.UserInfoBeautyMapper;
 import com.weTalk.redis.RedisComponent;
+import com.weTalk.service.UserContactService;
 import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.stereotype.Service;
 
@@ -42,10 +47,16 @@ public class UserInfoServiceImpl implements UserInfoService {
     private UserInfoBeautyMapper<UserInfoBeauty, UserInfoQuery> userInfoBeautyMapper;
 
     @Resource
+    private UserContactMapper<UserContact, UserContactQuery> userContactMapper;
+
+    @Resource
     private AppConfig appConfig;
 
     @Resource
     private RedisComponent redisComponent;
+
+    @Resource
+    private UserContactService userContactService;
 
     /**
      * 根据条件查询列表
@@ -215,8 +226,8 @@ public class UserInfoServiceImpl implements UserInfoService {
         userInfo.setJoinType(JoinTypeEnum.NEED_APPLY.getType());
         this.userInfoMapper.insert(userInfo);
 
-        //TODO 创建机器人好友
-
+        //创建机器人好友
+        userContactService.addContact4Robot(userId);
     }
 
     /**
@@ -241,8 +252,18 @@ public class UserInfoServiceImpl implements UserInfoService {
             throw new BusinessException("此账号已在别处登录，请退出后重试");
         }
 
-        //TODO 查询我的群组
-        //TODO 查询我的联系人
+        //查询联系人
+        UserContactQuery contactQuery = new UserContactQuery();
+        contactQuery.setUserId(userInfo.getUserId());
+        contactQuery.setStatus(UserContactStatusEnum.FRIEND.getStatus());
+        List<UserContact> contactList = userContactMapper.selectList(contactQuery);
+        List<String> contactIdList = contactList.stream().map(item->item.getContactId()).collect(Collectors.toList());
+
+        //登录成功后，将用户联系人列表添加进Redis里 缓存起来
+        redisComponent.cleanUserContact(userInfo.getUserId());
+        if (!contactIdList.isEmpty()){
+            redisComponent.addUserContactBatch(userInfo.getUserId(), contactIdList);
+        }
 
         TokenUserInfoDto tokenUserInfoDto = getTokenUserInfoDto(userInfo);
 

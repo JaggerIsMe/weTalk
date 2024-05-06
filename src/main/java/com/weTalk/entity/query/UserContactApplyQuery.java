@@ -68,6 +68,8 @@ public class UserContactApplyQuery extends BaseParam {
 	 */
 	private Boolean queryContactInfo;
 
+	private Long lastApplyTimestamp;
+
 	public void setApplyId(Integer applyId){
 		this.applyId = applyId;
 	}
@@ -170,5 +172,13 @@ public class UserContactApplyQuery extends BaseParam {
 
 	public void setQueryContactInfo(Boolean queryContactInfo) {
 		this.queryContactInfo = queryContactInfo;
+	}
+
+	public Long getLastApplyTimestamp() {
+		return lastApplyTimestamp;
+	}
+
+	public void setLastApplyTimestamp(Long lastApplyTimestamp) {
+		this.lastApplyTimestamp = lastApplyTimestamp;
 	}
 }

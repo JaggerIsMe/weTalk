@@ -5,9 +5,11 @@ import com.weTalk.entity.enums.UserContcatTypeEnum;
 import com.weTalk.exception.BusinessException;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 
 
 public class StringTools {
@@ -59,6 +61,7 @@ public class StringTools {
 
     /**
      * 生成用户ID
+     *
      * @return
      */
     public static String createUserId() {
@@ -67,6 +70,7 @@ public class StringTools {
 
     /**
      * 生成群组ID
+     *
      * @return
      */
     public static String createGroupId() {
@@ -95,11 +99,39 @@ public class StringTools {
 
     /**
      * 使用MD5加密字符串
+     *
      * @param originStr
      * @return
      */
     public static final String encodeByMd5(String originStr) {
         return StringTools.isEmpty(originStr) ? null : DigestUtils.md5Hex(originStr);
+    }
+
+    /**
+     * 过滤一些Html标签
+     * 防止注入
+     *
+     * @param content
+     * @return
+     */
+    public static String cleanHtmlTag(String content) {
+        if (isEmpty(content)) {
+            return content;
+        }
+        content = content.replace("<", "&lt");
+        content = content.replace("\r\n", "<br>");
+        content = content.replace("\n", "<br>");
+        return content;
+    }
+
+    /**
+     * 生成两个用户之间的会话SessionID
+     * @param userIds
+     * @return
+     */
+    public static final String createChatSessionId4User(String[] userIds){
+        Arrays.sort(userIds);
+        return encodeByMd5(StringUtils.join(userIds, ""));
     }
 
 }

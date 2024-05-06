@@ -3,12 +3,15 @@ package com.weTalk.websocket.netty;
 import com.weTalk.dto.TokenUserInfoDto;
 import com.weTalk.redis.RedisComponent;
 import com.weTalk.utils.StringTools;
+import com.weTalk.websocket.ChannelContextUtils;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
+import io.netty.util.Attribute;
+import io.netty.util.AttributeKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -24,6 +27,9 @@ public class HandlerWebSocket extends SimpleChannelInboundHandler<TextWebSocketF
     @Resource
     private RedisComponent redisComponent;
 
+    @Resource
+    private ChannelContextUtils channelContextUtils;
+
     /**
      * 在通道就绪后调用，一般用来做初始化
      *
@@ -38,12 +44,16 @@ public class HandlerWebSocket extends SimpleChannelInboundHandler<TextWebSocketF
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         logger.info("有连接断开......");
+        channelContextUtils.removeContext(ctx.channel());
     }
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, TextWebSocketFrame textWebSocketFrame) throws Exception {
         Channel channel = ctx.channel();
-        logger.info("收到消息{}", textWebSocketFrame.text());
+        Attribute<String> attribute = channel.attr(AttributeKey.valueOf(channel.id().toString()));
+        String userId = attribute.get();
+//        logger.info("收到来自{}的消息{}", userId, textWebSocketFrame.text());
+        redisComponent.saveUserHeartBeat(userId);
     }
 
     @Override
@@ -62,6 +72,8 @@ public class HandlerWebSocket extends SimpleChannelInboundHandler<TextWebSocketF
                 ctx.channel().close();
                 return;
             }
+
+            channelContextUtils.addContext(tokenUserInfoDto.getUserId(), ctx.channel());
 
         }
         super.userEventTriggered(ctx, evt);

@@ -108,4 +108,10 @@ public interface UserContactService {
 	 */
 	void removeUserContact(String userId, String contactId, UserContactStatusEnum statusEnum);
 
+	/**
+	 * 添加机器人好友
+	 * @param userId
+	 */
+	void addContact4Robot(String userId);
+
 }

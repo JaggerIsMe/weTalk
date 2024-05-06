@@ -1,36 +1,27 @@
 package com.weTalk.service.impl;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-
-import javax.annotation.Resource;
-
 import com.weTalk.dto.SysSettingDto;
 import com.weTalk.dto.TokenUserInfoDto;
 import com.weTalk.dto.UserContactSearchResultDto;
 import com.weTalk.entity.constants.Constants;
 import com.weTalk.entity.enums.*;
-import com.weTalk.entity.po.GroupInfo;
-import com.weTalk.entity.po.UserContactApply;
-import com.weTalk.entity.po.UserInfo;
+import com.weTalk.entity.po.*;
 import com.weTalk.entity.query.*;
+import com.weTalk.entity.vo.PaginationResultVO;
 import com.weTalk.exception.BusinessException;
-import com.weTalk.mappers.GroupInfoMapper;
-import com.weTalk.mappers.UserContactApplyMapper;
-import com.weTalk.mappers.UserInfoMapper;
+import com.weTalk.mappers.*;
 import com.weTalk.redis.RedisComponent;
-import com.weTalk.service.UserContactApplyService;
+import com.weTalk.service.UserContactService;
 import com.weTalk.utils.CopyTools;
+import com.weTalk.utils.StringTools;
 import jodd.util.ArraysUtil;
 import org.springframework.stereotype.Service;
-
-import com.weTalk.entity.po.UserContact;
-import com.weTalk.entity.vo.PaginationResultVO;
-import com.weTalk.mappers.UserContactMapper;
-import com.weTalk.service.UserContactService;
-import com.weTalk.utils.StringTools;
 import org.springframework.transaction.annotation.Transactional;
+
+import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 
 /**
@@ -53,6 +44,15 @@ public class UserContactServiceImpl implements UserContactService {
 
     @Resource
     private RedisComponent redisComponent;
+
+    @Resource
+    private ChatSessionMapper<ChatSession, ChatSessionQuery> chatSessionMapper;
+
+    @Resource
+    private ChatSessionUserMapper<ChatSessionUser, ChatSessionUserQuery> chatSessionUserMapper;
+
+    @Resource
+    private ChatMessageMapper<ChatMessage, ChatMessageQuery> chatMessageMapper;
 
     /**
      * 根据条件查询列表
@@ -375,5 +375,55 @@ public class UserContactServiceImpl implements UserContactService {
 
         //TODO 从好友的好友列表缓存中删除我
 
+    }
+
+    /**
+     * 添加机器人好友
+     * @param userId
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void addContact4Robot(String userId) {
+        Date curDate = new Date();
+        SysSettingDto sysSettingDto = redisComponent.getSysSetting();
+        String contactId = sysSettingDto.getRobotUid();
+        String contactName = sysSettingDto.getRobotNickName();
+        String sendMessage = sysSettingDto.getRobotWelcome();
+        sendMessage = StringTools.cleanHtmlTag(sendMessage);
+        //增加机器人好友
+        UserContact userContact = new UserContact();
+        userContact.setUserId(userId);
+        userContact.setContactId(contactId);
+        userContact.setContactType(UserContcatTypeEnum.USER.getType());
+        userContact.setCreateTime(curDate);
+        userContact.setLastUpdateTime(curDate);
+        userContact.setStatus(UserContactStatusEnum.FRIEND.getStatus());
+        this.userContactMapper.insert(userContact);
+        //增加会话信息
+        String sessionId = StringTools.createChatSessionId4User(new String[]{userId, contactId});
+        ChatSession chatSession = new ChatSession();
+        chatSession.setSessionId(sessionId);
+        chatSession.setLastMessage(sendMessage);
+        chatSession.setLastReceiveTime(curDate.getTime());
+        this.chatSessionMapper.insert(chatSession);
+        //增加会话人信息
+        ChatSessionUser chatSessionUser = new ChatSessionUser();
+        chatSessionUser.setUserId(userId);
+        chatSessionUser.setContactId(contactId);
+        chatSessionUser.setContactName(contactName);
+        chatSessionUser.setSessionId(sessionId);
+        this.chatSessionUserMapper.insert(chatSessionUser);
+        //增加聊天消息
+        ChatMessage chatMessage = new ChatMessage();
+        chatMessage.setSessionId(sessionId);
+        chatMessage.setMessageType(MessageTypeEnum.CHAT.getType());
+        chatMessage.setMessageContent(sendMessage);
+        chatMessage.setSendUserId(contactId);
+        chatMessage.setSendUserNickName(contactName);
+        chatMessage.setSendTime(curDate.getTime());
+        chatMessage.setContactId(userId);
+        chatMessage.setContactType(UserContcatTypeEnum.USER.getType());
+        chatMessage.setStatus(MessageStatusEnum.SENDED.getStatus());
+        chatMessageMapper.insert(chatMessage);
     }
 }
