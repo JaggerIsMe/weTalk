@@ -33,7 +33,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -125,7 +124,7 @@ public class ChannelContextUtils {
         //查询所有给我发消息的联系人，获取会话消息
         //只需要在chat_message表里查询contact_id是我的UID和我加入的群聊的ID的消息
         //我加入的群聊ID
-        List<String> groupIdList = contactIdList.stream().filter(item->item.startsWith(UserContcatTypeEnum.GROUP.getPrefix())).collect(Collectors.toList());
+        List<String> groupIdList = contactIdList.stream().filter(item -> item.startsWith(UserContcatTypeEnum.GROUP.getPrefix())).collect(Collectors.toList());
         //加上我自己的ID 因为别人给我发消息，消息的contact_id就是我的UID
         groupIdList.add(userId);
         ChatMessageQuery messageQuery = new ChatMessageQuery();
@@ -190,21 +189,91 @@ public class ChannelContextUtils {
         userInfoMapper.updateByUserId(userInfo, userId);
     }
 
+    /**
+     * 发送消息
+     *
+     * @param messageSendDto
+     */
+    public void sendMessage(MessageSendDto messageSendDto) {
+        UserContcatTypeEnum contcatTypeEnum = UserContcatTypeEnum.getByPrefix(messageSendDto.getContactId());
+        switch (contcatTypeEnum) {
+            case USER:
+                send2User(messageSendDto);
+                break;
+            case GROUP:
+                send2Group(messageSendDto);
+                break;
+        }
+    }
 
-    public static void sendMsg(MessageSendDto messageSendDto, String receiveId) {
-        if (null == receiveId) {
+    /**
+     * 单聊消息 发送给用户
+     *
+     * @param messageSendDto
+     */
+    public void send2User(MessageSendDto messageSendDto) {
+        String contactId = messageSendDto.getContactId();
+        if (StringTools.isEmpty(contactId)) {
             return;
         }
-        Channel sendChannel = USER_CONTEXT_MAP.get(receiveId);
-        if (sendChannel == null) {
+        sendMsg(messageSendDto, contactId);
+        //强制下线
+        if (MessageTypeEnum.FORCE_OFF_LINE.getType().equals(messageSendDto.getMessageType())) {
+            //关闭通道
+            closeChannel(contactId);
+        }
+    }
+
+    /**
+     * 群聊消息 发送给群组
+     *
+     * @param messageSendDto
+     */
+    public void send2Group(MessageSendDto messageSendDto) {
+        if (StringTools.isEmpty(messageSendDto.getContactId())) {
+            return;
+        }
+        ChannelGroup channelGroup = GROUP_CONTEXT_MAP.get(messageSendDto.getContactId());
+        if (null == channelGroup) {
+            return;
+        }
+        channelGroup.writeAndFlush(new TextWebSocketFrame(JsonUtils.convertObj2Json(messageSendDto)));
+    }
+
+    /**
+     * 发送单聊消息
+     *
+     * @param messageSendDto
+     * @param receiveId
+     */
+    public void sendMsg(MessageSendDto messageSendDto, String receiveId) {
+        Channel userChannel = USER_CONTEXT_MAP.get(receiveId);
+        if (userChannel == null) {
             return;
         }
 
         //相对于客户端而言，联系人就是发送人，所以这里转一下再发送
         messageSendDto.setContactId(messageSendDto.getSendUserId());
         messageSendDto.setContactName(messageSendDto.getSendUserNickName());
-        sendChannel.writeAndFlush(new TextWebSocketFrame(JsonUtils.convertObj2Json(messageSendDto)));
+        userChannel.writeAndFlush(new TextWebSocketFrame(JsonUtils.convertObj2Json(messageSendDto)));
 
+    }
+
+    /**
+     * 关闭通道
+     *
+     * @param userId
+     */
+    public void closeChannel(String userId) {
+        if (StringTools.isEmpty(userId)) {
+            return;
+        }
+        redisComponent.cleanUserTokenByUserId(userId);
+        Channel channel = USER_CONTEXT_MAP.get(userId);
+        if (null == channel) {
+            return;
+        }
+        channel.close();
     }
 
 }

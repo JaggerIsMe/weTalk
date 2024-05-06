@@ -16,6 +16,12 @@ public class AppConfig {
     @Value("${admin.emails:}")
     private String adminEmails;
 
+    @Value("${spring.redis.host:}")
+    private String redisHost;
+
+    @Value("${spring.redis.port:}")
+    private String redisPort;
+
     public Integer getWsPort() {
         return wsPort;
     }
@@ -30,5 +36,13 @@ public class AppConfig {
 
     public String getAdminEmails() {
         return adminEmails;
+    }
+
+    public String getRedisHost() {
+        return redisHost;
+    }
+
+    public String getRedisPort() {
+        return redisPort;
     }
 }

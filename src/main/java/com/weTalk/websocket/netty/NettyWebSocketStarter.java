@@ -1,6 +1,7 @@
 package com.weTalk.websocket.netty;
 
 import com.weTalk.config.AppConfig;
+import com.weTalk.utils.StringTools;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -75,9 +76,17 @@ public class NettyWebSocketStarter implements Runnable{
                         }
                     });
 
-            ChannelFuture channelFuture = serverBootstrap.bind(appConfig.getWsPort()).sync();
-            channelFuture.channel().closeFuture().sync();
+            //ws默认端口 在application.properties里配置了
+            Integer wsPort = appConfig.getWsPort();
+            //当要集群部署，需要多个服务器时，重新读取新开服务器单独配置的ws端口
+            String wsPortStr = System.getProperty("ws.port");
+            if (!StringTools.isEmpty(wsPortStr)){
+                wsPort = Integer.parseInt(wsPortStr);
+            }
+
+            ChannelFuture channelFuture = serverBootstrap.bind(wsPort).sync();
             logger.info("Netty服务启动成功！端口号为:{}", appConfig.getWsPort());
+            channelFuture.channel().closeFuture().sync();
         } catch (Exception e) {
             logger.error("启动Netty失败", e);
         } finally {

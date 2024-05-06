@@ -3,6 +3,7 @@ package com.weTalk.redis;
 import com.weTalk.dto.SysSettingDto;
 import com.weTalk.dto.TokenUserInfoDto;
 import com.weTalk.entity.constants.Constants;
+import com.weTalk.utils.StringTools;
 import io.netty.channel.Channel;
 import org.springframework.stereotype.Component;
 
@@ -66,6 +67,19 @@ public class RedisComponent {
     public TokenUserInfoDto getTokenUserInfoDto(String token) {
         TokenUserInfoDto tokenUserInfoDto = (TokenUserInfoDto) redisUtils.get(Constants.REDIS_KEY_WS_TOKEN + token);
         return tokenUserInfoDto;
+    }
+
+    /**
+     * 根据userId删除token
+     * 用户强制下线后执行
+     * @param userId
+     */
+    public void cleanUserTokenByUserId(String userId) {
+        String token = (String) redisUtils.get(Constants.REDIS_KEY_WS_TOKEN_USERID + userId);
+        if (StringTools.isEmpty(token)) {
+            return;
+        }
+        redisUtils.delete(Constants.REDIS_KEY_WS_TOKEN + token);
     }
 
     /**

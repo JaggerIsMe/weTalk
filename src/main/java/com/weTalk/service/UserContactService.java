@@ -80,17 +80,6 @@ public interface UserContactService {
 	UserContactSearchResultDto searchContact(String userId, String contactId);
 
 	/**
-	 * 申请添加好友或群组
-	 * Integer 返回加入的类型JoinTypeEnum 是直接添加成功还是等待审核中
-	 * 返回的值用于前端的页面跳转
-	 * @param tokenUserInfoDto
-	 * @param contactId
-	 * @param applyInfo
-	 * @return
-	 */
-	Integer applyAdd(TokenUserInfoDto tokenUserInfoDto, String contactId, String applyInfo);
-
-	/**
 	 * 添加联系人
 	 * @param appleUserId
 	 * @param receiveUserId

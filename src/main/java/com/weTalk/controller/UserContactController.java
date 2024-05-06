@@ -66,7 +66,7 @@ public class UserContactController extends ABaseController {
     @GlobalInterceptor
     public ResponseVO applyAdd(HttpServletRequest request, @NotEmpty String contactId, String applyInfo) {
         TokenUserInfoDto tokenUserInfoDto = getTokenUserInfo(request);
-        Integer joinType = this.userContactService.applyAdd(tokenUserInfoDto, contactId, applyInfo);
+        Integer joinType = this.userContactApplyService.applyAdd(tokenUserInfoDto, contactId, applyInfo);
         return getSuccessResponseVO(joinType);
     }
 

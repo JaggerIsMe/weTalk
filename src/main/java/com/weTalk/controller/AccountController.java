@@ -1,6 +1,7 @@
 package com.weTalk.controller;
 
 import com.weTalk.annotation.GlobalInterceptor;
+import com.weTalk.dto.MessageSendDto;
 import com.weTalk.dto.TokenUserInfoDto;
 import com.weTalk.entity.constants.Constants;
 import com.weTalk.entity.po.UserInfo;
@@ -11,6 +12,7 @@ import com.weTalk.redis.RedisComponent;
 import com.weTalk.redis.RedisUtils;
 import com.weTalk.service.UserInfoService;
 import com.weTalk.utils.CopyTools;
+import com.weTalk.websocket.MessageHandler;
 import com.wf.captcha.ArithmeticCaptcha;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,6 +43,9 @@ public class AccountController extends ABaseController {
 
     @Resource
     private RedisComponent redisComponent;
+
+//    @Resource
+//    private MessageHandler messageHandler;
 
     /**
      * 生成验证码
@@ -134,5 +139,13 @@ public class AccountController extends ABaseController {
     public ResponseVO getSysSetting() {
         return getSuccessResponseVO(redisComponent.getSysSetting());
     }
+
+//    @RequestMapping("/testBroadcast")
+//    public ResponseVO testBroadcast() {
+//        MessageSendDto sendDto = new MessageSendDto();
+//        sendDto.setMessageContent("来自5050的消息" + System.currentTimeMillis());
+//        messageHandler.sendMessage(sendDto);
+//        return getSuccessResponseVO(null);
+//    }
 
 }
