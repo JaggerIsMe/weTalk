@@ -2,6 +2,8 @@ package com.weTalk.service;
 
 import java.util.List;
 
+import com.weTalk.dto.MessageSendDto;
+import com.weTalk.dto.TokenUserInfoDto;
 import com.weTalk.entity.query.ChatMessageQuery;
 import com.weTalk.entity.po.ChatMessage;
 import com.weTalk.entity.vo.PaginationResultVO;
@@ -69,4 +71,12 @@ public interface ChatMessageService {
 	 */
 	Integer deleteChatMessageByMessageId(Long messageId);
 
+	/**
+	 * 用户通过http协议发送消息给服务端后
+	 * 保存消息到数据库
+	 * @param chatMessage
+	 * @param tokenUserInfoDto
+	 * @return
+	 */
+    MessageSendDto saveMessage(ChatMessage chatMessage, TokenUserInfoDto tokenUserInfoDto);
 }
