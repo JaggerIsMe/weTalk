@@ -171,6 +171,16 @@ public class ChannelContextUtils {
     }
 
     /**
+     * 把用户添加进群组会话
+     * @param userId
+     * @param groupId
+     */
+    public void addUser2Group(String userId, String groupId) {
+        Channel channel = USER_CONTEXT_MAP.get(userId);
+        add2Group(groupId, channel);
+    }
+
+    /**
      * 用户WebSocket连接断开后，把channel移除
      *
      * @param channel
@@ -220,7 +230,7 @@ public class ChannelContextUtils {
         //强制下线
         if (MessageTypeEnum.FORCE_OFF_LINE.getType().equals(messageSendDto.getMessageType())) {
             //关闭通道
-            closeChannel(contactId);
+            closeContext(contactId);
         }
     }
 
@@ -272,7 +282,7 @@ public class ChannelContextUtils {
      *
      * @param userId
      */
-    public void closeChannel(String userId) {
+    public void closeContext(String userId) {
         if (StringTools.isEmpty(userId)) {
             return;
         }

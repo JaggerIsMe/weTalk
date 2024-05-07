@@ -1,21 +1,21 @@
 package com.weTalk.service.impl;
 
 import com.weTalk.config.AppConfig;
+import com.weTalk.dto.MessageSendDto;
 import com.weTalk.dto.SysSettingDto;
 import com.weTalk.entity.constants.Constants;
 import com.weTalk.entity.enums.*;
-import com.weTalk.entity.po.GroupInfo;
-import com.weTalk.entity.po.UserContact;
-import com.weTalk.entity.query.GroupInfoQuery;
-import com.weTalk.entity.query.SimplePage;
-import com.weTalk.entity.query.UserContactQuery;
+import com.weTalk.entity.po.*;
+import com.weTalk.entity.query.*;
 import com.weTalk.entity.vo.PaginationResultVO;
 import com.weTalk.exception.BusinessException;
-import com.weTalk.mappers.GroupInfoMapper;
-import com.weTalk.mappers.UserContactMapper;
+import com.weTalk.mappers.*;
 import com.weTalk.redis.RedisComponent;
 import com.weTalk.service.GroupInfoService;
+import com.weTalk.utils.CopyTools;
 import com.weTalk.utils.StringTools;
+import com.weTalk.websocket.ChannelContextUtils;
+import com.weTalk.websocket.MessageHandler;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -44,6 +44,21 @@ public class GroupInfoServiceImpl implements GroupInfoService {
 
     @Resource
     private AppConfig appConfig;
+
+    @Resource
+    private ChatSessionMapper<ChatSession, ChatSessionQuery> chatSessionMapper;
+
+    @Resource
+    private ChatSessionUserMapper<ChatSessionUser, ChatSessionUserQuery> chatSessionUserMapper;
+
+    @Resource
+    private ChatMessageMapper<ChatMessage, ChatMessageQuery> chatMessageMapper;
+
+    @Resource
+    private MessageHandler messageHandler;
+
+    @Resource
+    private ChannelContextUtils channelContextUtils;
 
     /**
      * 根据条件查询列表
@@ -189,8 +204,47 @@ public class GroupInfoServiceImpl implements GroupInfoService {
             userContact.setLastUpdateTime(curDate);
             this.userContactMapper.insert(userContact);
 
-            //TODO 创建会话
-            //TODO 发送消息
+            //创建会话
+            String sessionId = StringTools.createChatSessionId4Group(groupInfo.getGroupId());
+            ChatSession chatSession = new ChatSession();
+            chatSession.setSessionId(sessionId);
+            chatSession.setLastMessage(MessageTypeEnum.GROUP_CREATE.getInitMessage());
+            chatSession.setLastReceiveTime(curDate.getTime());
+            this.chatSessionMapper.insertOrUpdate(chatSession);
+
+            //创建群主的会话session，群主建群后就可以在群里发消息
+            ChatSessionUser chatSessionUser = new ChatSessionUser();
+            chatSessionUser.setUserId(groupInfo.getGroupOwnerId());
+            chatSessionUser.setContactId(groupInfo.getGroupId());
+            chatSessionUser.setContactName(groupInfo.getGroupName());
+            chatSessionUser.setSessionId(sessionId);
+            this.chatSessionUserMapper.insert(chatSessionUser);
+
+            //创建消息
+            ChatMessage chatMessage = new ChatMessage();
+            chatMessage.setSessionId(sessionId);
+            chatMessage.setMessageType(MessageTypeEnum.GROUP_CREATE.getType());
+            chatMessage.setMessageContent(MessageTypeEnum.GROUP_CREATE.getInitMessage());
+            chatMessage.setSendTime(curDate.getTime());
+            chatMessage.setContactId(groupInfo.getGroupId());
+            chatMessage.setContactType(UserContcatTypeEnum.GROUP.getType());
+            chatMessage.setStatus(MessageStatusEnum.SENDED.getStatus());
+            chatMessageMapper.insert(chatMessage);
+
+            //添加进联系人缓存中
+            redisComponent.addUserContact(groupInfo.getGroupOwnerId(), groupInfo.getGroupId());
+
+            //将群主的通信通道添加进群聊通道中
+            channelContextUtils.addUser2Group(groupInfo.getGroupOwnerId(), groupInfo.getGroupId());
+
+            //发送消息
+            chatSessionUser.setLastMessage(MessageTypeEnum.GROUP_CREATE.getInitMessage());
+            chatSessionUser.setLastReceiveTime(curDate.getTime());
+            chatSessionUser.setMemberCount(1);  //群聊刚创建 群成员只有一个
+            MessageSendDto messageSendDto = CopyTools.copy(chatMessage, MessageSendDto.class);
+            messageSendDto.setExtendData(chatSessionUser);
+            messageSendDto.setLastMessage(chatSessionUser.getLastMessage());
+            messageHandler.sendMessage(messageSendDto);
 
         } else {
             GroupInfo dbInfo = this.groupInfoMapper.selectByGroupId(groupInfo.getGroupId());
