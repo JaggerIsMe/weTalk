@@ -2,9 +2,7 @@ package com.weTalk.service.impl;
 
 import com.weTalk.dto.MessageSendDto;
 import com.weTalk.dto.SysSettingDto;
-import com.weTalk.dto.TokenUserInfoDto;
 import com.weTalk.dto.UserContactSearchResultDto;
-import com.weTalk.entity.constants.Constants;
 import com.weTalk.entity.enums.*;
 import com.weTalk.entity.po.*;
 import com.weTalk.entity.query.*;
@@ -17,7 +15,6 @@ import com.weTalk.utils.CopyTools;
 import com.weTalk.utils.StringTools;
 import com.weTalk.websocket.ChannelContextUtils;
 import com.weTalk.websocket.MessageHandler;
-import jodd.util.ArraysUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -175,7 +172,7 @@ public class UserContactServiceImpl implements UserContactService {
      */
     @Override
     public UserContactSearchResultDto searchContact(String userId, String contactId) {
-        UserContcatTypeEnum typeEnum = UserContcatTypeEnum.getByPrefix(contactId);
+        UserContactTypeEnum typeEnum = UserContactTypeEnum.getByPrefix(contactId);
         if (null == typeEnum) {
             return null;
         }
@@ -223,7 +220,7 @@ public class UserContactServiceImpl implements UserContactService {
     @Override
     public void addContact(String applyUserId, String receiveUserId, String contactId, Integer contactType, String applyInfo) {
         //加群 判断群有没有满
-        if (UserContcatTypeEnum.GROUP.getType().equals(contactType)) {
+        if (UserContactTypeEnum.GROUP.getType().equals(contactType)) {
             UserContactQuery userContactQuery = new UserContactQuery();
             userContactQuery.setContactId(contactId);
             userContactQuery.setStatus(UserContactStatusEnum.FRIEND.getStatus());
@@ -246,7 +243,7 @@ public class UserContactServiceImpl implements UserContactService {
         userContact.setStatus(UserContactStatusEnum.FRIEND.getStatus());
         contactList.add(userContact);
         //如果是申请好友，接受人也要添加申请人；如果是申请加群，则接受人不需要添加申请人
-        if (UserContcatTypeEnum.USER.getType().equals(contactType)) {
+        if (UserContactTypeEnum.USER.getType().equals(contactType)) {
             userContact = new UserContact();
             userContact.setUserId(receiveUserId);
             userContact.setContactId(applyUserId);
@@ -260,21 +257,21 @@ public class UserContactServiceImpl implements UserContactService {
         userContactMapper.insertOrUpdateBatch(contactList);
 
         //如果是好友，接受人也添加申请人为好友 添加缓存
-        if (UserContcatTypeEnum.USER.getType().equals(contactType)) {
+        if (UserContactTypeEnum.USER.getType().equals(contactType)) {
             redisComponent.addUserContact(receiveUserId, applyUserId);
         }
         redisComponent.addUserContact(applyUserId, contactId);
 
         //创建会话 发送消息
         String sessionId = null;
-        if (UserContcatTypeEnum.USER.getType().equals(contactType)) {
+        if (UserContactTypeEnum.USER.getType().equals(contactType)) {
             sessionId = StringTools.createChatSessionId4User(new String[]{applyUserId, contactId});
         } else {
             sessionId = StringTools.createChatSessionId4Group(contactId);
         }
 
         List<ChatSessionUser> chatSessionUserList = new ArrayList<>();
-        if (UserContcatTypeEnum.USER.getType().equals(contactType)) {
+        if (UserContactTypeEnum.USER.getType().equals(contactType)) {
             //创建会话
             ChatSession chatSession = new ChatSession();
             chatSession.setSessionId(sessionId);
@@ -312,7 +309,7 @@ public class UserContactServiceImpl implements UserContactService {
             chatMessage.setSendUserNickName(applyUser.getNickName());
             chatMessage.setSendTime(curDate.getTime());
             chatMessage.setContactId(contactId);
-            chatMessage.setContactType(UserContcatTypeEnum.USER.getType());
+            chatMessage.setContactType(UserContactTypeEnum.USER.getType());
             chatMessageMapper.insert(chatMessage);
 
             //开始发消息
@@ -331,7 +328,7 @@ public class UserContactServiceImpl implements UserContactService {
             chatSessionUser.setUserId(applyUserId);
             chatSessionUser.setContactId(contactId);
             GroupInfo groupInfo = this.groupInfoMapper.selectByGroupId(contactId);
-            chatSessionUser.setContactId(groupInfo.getGroupId());
+            chatSessionUser.setContactName(groupInfo.getGroupName());
             chatSessionUser.setSessionId(sessionId);
             this.chatSessionUserMapper.insert(chatSessionUser);
 
@@ -351,7 +348,7 @@ public class UserContactServiceImpl implements UserContactService {
             chatMessage.setMessageContent(sendMessage);
             chatMessage.setSendTime(curDate.getTime());
             chatMessage.setContactId(contactId);
-            chatMessage.setContactType(UserContcatTypeEnum.GROUP.getType());
+            chatMessage.setContactType(UserContactTypeEnum.GROUP.getType());
             chatMessage.setStatus(MessageStatusEnum.SENDED.getStatus());
             this.chatMessageMapper.insert(chatMessage);
 
@@ -424,7 +421,7 @@ public class UserContactServiceImpl implements UserContactService {
         UserContact userContact = new UserContact();
         userContact.setUserId(userId);
         userContact.setContactId(contactId);
-        userContact.setContactType(UserContcatTypeEnum.USER.getType());
+        userContact.setContactType(UserContactTypeEnum.USER.getType());
         userContact.setCreateTime(curDate);
         userContact.setLastUpdateTime(curDate);
         userContact.setStatus(UserContactStatusEnum.FRIEND.getStatus());
@@ -452,7 +449,7 @@ public class UserContactServiceImpl implements UserContactService {
         chatMessage.setSendUserNickName(contactName);
         chatMessage.setSendTime(curDate.getTime());
         chatMessage.setContactId(userId);
-        chatMessage.setContactType(UserContcatTypeEnum.USER.getType());
+        chatMessage.setContactType(UserContactTypeEnum.USER.getType());
         chatMessage.setStatus(MessageStatusEnum.SENDED.getStatus());
         chatMessageMapper.insert(chatMessage);
     }

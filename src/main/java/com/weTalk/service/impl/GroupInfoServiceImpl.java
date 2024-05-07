@@ -11,6 +11,7 @@ import com.weTalk.entity.vo.PaginationResultVO;
 import com.weTalk.exception.BusinessException;
 import com.weTalk.mappers.*;
 import com.weTalk.redis.RedisComponent;
+import com.weTalk.service.ChatSessionUserService;
 import com.weTalk.service.GroupInfoService;
 import com.weTalk.utils.CopyTools;
 import com.weTalk.utils.StringTools;
@@ -59,6 +60,9 @@ public class GroupInfoServiceImpl implements GroupInfoService {
 
     @Resource
     private ChannelContextUtils channelContextUtils;
+
+    @Resource
+    private ChatSessionUserService chatSessionUserService;
 
     /**
      * 根据条件查询列表
@@ -194,10 +198,10 @@ public class GroupInfoServiceImpl implements GroupInfoService {
             groupInfo.setGroupId(StringTools.createGroupId());
             this.groupInfoMapper.insert(groupInfo);
 
-            //将群组添加进联系人列表
+            //将群组添加进群主的联系人列表
             UserContact userContact = new UserContact();
             userContact.setStatus(UserContactStatusEnum.FRIEND.getStatus());
-            userContact.setContactType(UserContcatTypeEnum.GROUP.getType());
+            userContact.setContactType(UserContactTypeEnum.GROUP.getType());
             userContact.setContactId(groupInfo.getGroupId());
             userContact.setUserId(groupInfo.getGroupOwnerId());
             userContact.setCreateTime(curDate);
@@ -227,7 +231,7 @@ public class GroupInfoServiceImpl implements GroupInfoService {
             chatMessage.setMessageContent(MessageTypeEnum.GROUP_CREATE.getInitMessage());
             chatMessage.setSendTime(curDate.getTime());
             chatMessage.setContactId(groupInfo.getGroupId());
-            chatMessage.setContactType(UserContcatTypeEnum.GROUP.getType());
+            chatMessage.setContactType(UserContactTypeEnum.GROUP.getType());
             chatMessage.setStatus(MessageStatusEnum.SENDED.getStatus());
             chatMessageMapper.insert(chatMessage);
 
@@ -254,9 +258,17 @@ public class GroupInfoServiceImpl implements GroupInfoService {
             }
             this.groupInfoMapper.updateByGroupId(groupInfo, groupInfo.getGroupId());
 
-            //TODO 更新相关表的冗余信息
-            //TODO 修改群昵称发送WebSocket消息
-
+            String contactNameUpdate = null;
+            //如果群名被修改
+            if (!dbInfo.getGroupName().equals(groupInfo.getGroupName())) {
+                contactNameUpdate = groupInfo.getGroupName();
+            }
+            if (null == contactNameUpdate) {
+                //群名没有被修改
+                return;
+            }
+            //更新群昵称 更新相关表的冗余信息
+            chatSessionUserService.updateRedundantInfo(contactNameUpdate, groupInfo.getGroupId());
         }
 
         if (null == avatarFile) {
@@ -294,7 +306,7 @@ public class GroupInfoServiceImpl implements GroupInfoService {
         //更新群成员的联系人信息
         UserContactQuery userContactQuery = new UserContactQuery();
         userContactQuery.setContactId(groupId);
-        userContactQuery.setContactType(UserContcatTypeEnum.GROUP.getType());
+        userContactQuery.setContactType(UserContactTypeEnum.GROUP.getType());
 
         UserContact updateUserContact = new UserContact();
         updateUserContact.setStatus(UserContactStatusEnum.DEL_FRIEND.getStatus());

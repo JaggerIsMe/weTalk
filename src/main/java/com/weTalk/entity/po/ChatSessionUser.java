@@ -1,6 +1,6 @@
 package com.weTalk.entity.po;
 
-import com.weTalk.entity.enums.UserContcatTypeEnum;
+import com.weTalk.entity.enums.UserContactTypeEnum;
 
 import java.io.Serializable;
 
@@ -117,7 +117,7 @@ public class ChatSessionUser implements Serializable {
     }
 
     public Integer getContactType() {
-        return UserContcatTypeEnum.getByPrefix(contactId).getType();
+        return UserContactTypeEnum.getByPrefix(contactId).getType();
     }
 
     public void setContactType(Integer contactType) {

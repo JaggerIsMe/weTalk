@@ -5,7 +5,7 @@ import com.weTalk.dto.WsInitData;
 import com.weTalk.entity.constants.Constants;
 import com.weTalk.entity.enums.MessageTypeEnum;
 import com.weTalk.entity.enums.UserContactApplyStatusEnum;
-import com.weTalk.entity.enums.UserContcatTypeEnum;
+import com.weTalk.entity.enums.UserContactTypeEnum;
 import com.weTalk.entity.po.ChatMessage;
 import com.weTalk.entity.po.ChatSessionUser;
 import com.weTalk.entity.po.UserContactApply;
@@ -15,10 +15,10 @@ import com.weTalk.entity.query.ChatSessionUserQuery;
 import com.weTalk.entity.query.UserContactApplyQuery;
 import com.weTalk.entity.query.UserInfoQuery;
 import com.weTalk.mappers.ChatMessageMapper;
+import com.weTalk.mappers.ChatSessionUserMapper;
 import com.weTalk.mappers.UserContactApplyMapper;
 import com.weTalk.mappers.UserInfoMapper;
 import com.weTalk.redis.RedisComponent;
-import com.weTalk.service.ChatSessionUserService;
 import com.weTalk.utils.JsonUtils;
 import com.weTalk.utils.StringTools;
 import io.netty.channel.Channel;
@@ -59,7 +59,7 @@ public class ChannelContextUtils {
     private UserInfoMapper<UserInfo, UserInfoQuery> userInfoMapper;
 
     @Resource
-    private ChatSessionUserService chatSessionUserService;
+    private ChatSessionUserMapper<ChatSessionUser, ChatSessionUserQuery> chatSessionUserMapper;
 
     @Resource
     private ChatMessageMapper<ChatMessage, ChatMessageQuery> chatMessageMapper;
@@ -87,7 +87,7 @@ public class ChannelContextUtils {
         List<String> contactIdList = redisComponent.getUserContactList(userId);
         //添加群组列表
         for (String groupId : contactIdList) {
-            if (groupId.startsWith(UserContcatTypeEnum.GROUP.getPrefix())) {
+            if (groupId.startsWith(UserContactTypeEnum.GROUP.getPrefix())) {
                 add2Group(groupId, channel);
             }
         }
@@ -114,7 +114,7 @@ public class ChannelContextUtils {
         ChatSessionUserQuery chatSessionUserQuery = new ChatSessionUserQuery();
         chatSessionUserQuery.setUserId(userId);
         chatSessionUserQuery.setOrderBy("last_receive_time desc");
-        List<ChatSessionUser> chatSessionUserList = chatSessionUserService.findListByParam(chatSessionUserQuery);
+        List<ChatSessionUser> chatSessionUserList = chatSessionUserMapper.selectList(chatSessionUserQuery);
         WsInitData wsInitData = new WsInitData();
         wsInitData.setChatSessionList(chatSessionUserList);
 
@@ -124,7 +124,7 @@ public class ChannelContextUtils {
         //查询所有给我发消息的联系人，获取会话消息
         //只需要在chat_message表里查询contact_id是我的UID和我加入的群聊的ID的消息
         //我加入的群聊ID
-        List<String> groupIdList = contactIdList.stream().filter(item -> item.startsWith(UserContcatTypeEnum.GROUP.getPrefix())).collect(Collectors.toList());
+        List<String> groupIdList = contactIdList.stream().filter(item -> item.startsWith(UserContactTypeEnum.GROUP.getPrefix())).collect(Collectors.toList());
         //加上我自己的ID 因为别人给我发消息，消息的contact_id就是我的UID
         groupIdList.add(userId);
         ChatMessageQuery messageQuery = new ChatMessageQuery();
@@ -205,7 +205,7 @@ public class ChannelContextUtils {
      * @param messageSendDto
      */
     public void sendMessage(MessageSendDto messageSendDto) {
-        UserContcatTypeEnum contcatTypeEnum = UserContcatTypeEnum.getByPrefix(messageSendDto.getContactId());
+        UserContactTypeEnum contcatTypeEnum = UserContactTypeEnum.getByPrefix(messageSendDto.getContactId());
         switch (contcatTypeEnum) {
             case USER:
                 send2User(messageSendDto);

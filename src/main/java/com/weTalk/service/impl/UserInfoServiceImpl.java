@@ -19,6 +19,7 @@ import com.weTalk.exception.BusinessException;
 import com.weTalk.mappers.UserContactMapper;
 import com.weTalk.mappers.UserInfoBeautyMapper;
 import com.weTalk.redis.RedisComponent;
+import com.weTalk.service.ChatSessionUserService;
 import com.weTalk.service.UserContactService;
 import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.stereotype.Service;
@@ -57,6 +58,9 @@ public class UserInfoServiceImpl implements UserInfoService {
 
     @Resource
     private UserContactService userContactService;
+
+    @Resource
+    private ChatSessionUserService chatSessionUserService;
 
     /**
      * 根据条件查询列表
@@ -205,7 +209,7 @@ public class UserInfoServiceImpl implements UserInfoService {
         //是否使用靓号作为ID
         Boolean isUseBeautyAcc = ((null != beautyAcc) && (BeautyAccountStatusEnum.UNUSED.getStatus().equals(beautyAcc.getStatus())));
         if (isUseBeautyAcc) {
-            userId = UserContcatTypeEnum.USER.getPrefix() + beautyAcc.getUserId();
+            userId = UserContactTypeEnum.USER.getPrefix() + beautyAcc.getUserId();
             //若使用靓号 把靓号标记为已使用
             UserInfoBeauty updateBeauty = new UserInfoBeauty();
             updateBeauty.setStatus(BeautyAccountStatusEnum.USED.getStatus());
@@ -296,6 +300,13 @@ public class UserInfoServiceImpl implements UserInfoService {
         return tokenUserInfoDto;
     }
 
+    /**
+     * 修改用户信息 并且同步更新会话的名称
+     * @param userInfo
+     * @param avatarFile
+     * @param avatarCover
+     * @throws IOException
+     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void updateByUserInfo(UserInfo userInfo, MultipartFile avatarFile, MultipartFile avatarCover) throws IOException {
@@ -325,7 +336,17 @@ public class UserInfoServiceImpl implements UserInfoService {
         if (!dbInfo.getNickName().equals(userInfo.getNickName())) {
             contactNameUpdate = userInfo.getNickName();
         }
-        //TODO 更新会话中的昵称信息
+        if (null == contactNameUpdate){
+            return;
+        }
+
+        //更新缓存里token中的昵称
+        TokenUserInfoDto tokenUserInfoDto = redisComponent.getTokenUserInfoDtoByUserId(userInfo.getUserId());
+        tokenUserInfoDto.setNickName(contactNameUpdate);
+        redisComponent.saveTokenUserInfoDto(tokenUserInfoDto);
+
+        //更新会话中的昵称信息 更新冗余信息
+        chatSessionUserService.updateRedundantInfo(contactNameUpdate, userInfo.getUserId());
     }
 
     /**

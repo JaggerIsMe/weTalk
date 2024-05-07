@@ -1,14 +1,11 @@
 package com.weTalk.service.impl;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Objects;
 
 import javax.annotation.Resource;
 
 import com.weTalk.dto.MessageSendDto;
-import com.weTalk.dto.SysSettingDto;
 import com.weTalk.dto.TokenUserInfoDto;
 import com.weTalk.entity.constants.Constants;
 import com.weTalk.entity.enums.*;
@@ -20,7 +17,6 @@ import com.weTalk.exception.BusinessException;
 import com.weTalk.mappers.GroupInfoMapper;
 import com.weTalk.mappers.UserContactMapper;
 import com.weTalk.mappers.UserInfoMapper;
-import com.weTalk.redis.RedisComponent;
 import com.weTalk.service.UserContactService;
 import com.weTalk.websocket.MessageHandler;
 import jodd.util.ArraysUtil;
@@ -196,7 +192,7 @@ public class UserContactApplyServiceImpl implements UserContactApplyService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Integer applyAdd(TokenUserInfoDto tokenUserInfoDto, String contactId, String applyInfo) {
-        UserContcatTypeEnum typeEnum = UserContcatTypeEnum.getByPrefix(contactId);
+        UserContactTypeEnum typeEnum = UserContactTypeEnum.getByPrefix(contactId);
         if (null == typeEnum) {
             throw new BusinessException(ResponseCodeEnum.CODE_600);
         }
@@ -227,7 +223,7 @@ public class UserContactApplyServiceImpl implements UserContactApplyService {
 
         //如果是申请加群操作，先判断该群的状态或存不存在
         //然后将接收申请通知的对象Id设为该群的群主Id，并设置加群方式类型
-        if (UserContcatTypeEnum.GROUP == typeEnum) {
+        if (UserContactTypeEnum.GROUP == typeEnum) {
             GroupInfo groupInfo = groupInfoMapper.selectByGroupId(contactId);
             if (groupInfo == null || GroupStatusEnum.DISSOLUTION.getStatus().equals(groupInfo.getStatus())) {
                 throw new BusinessException("群聊不存在或已解散");

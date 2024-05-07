@@ -70,8 +70,20 @@ public class RedisComponent {
     }
 
     /**
+     * 根据userId获取对应的tokenUserInfoDto信息
+     *
+     * @param userId
+     * @return
+     */
+    public TokenUserInfoDto getTokenUserInfoDtoByUserId(String userId) {
+        String token = (String) redisUtils.get(Constants.REDIS_KEY_WS_TOKEN_USERID + userId);
+        return getTokenUserInfoDto(token);
+    }
+
+    /**
      * 根据userId删除token
      * 用户强制下线后执行
+     *
      * @param userId
      */
     public void cleanUserTokenByUserId(String userId) {
@@ -123,15 +135,16 @@ public class RedisComponent {
 
     /**
      * 添加用户联系人列表缓存
+     *
      * @param userId
      * @param contactId
      */
-    public void addUserContact(String userId, String contactId){
+    public void addUserContact(String userId, String contactId) {
         List<String> contactIdList = getUserContactList(userId);
-        if (contactIdList.contains(contactId)){
+        if (contactIdList.contains(contactId)) {
             return;
         }
-        redisUtils.lpush(Constants.REDIS_KEY_USER_CONTACT+userId, contactId, Constants.REDIS_KEY_TOKEN_EXPIRES);
+        redisUtils.lpush(Constants.REDIS_KEY_USER_CONTACT + userId, contactId, Constants.REDIS_KEY_TOKEN_EXPIRES);
     }
 
     /**

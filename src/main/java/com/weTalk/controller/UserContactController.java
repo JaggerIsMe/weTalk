@@ -121,7 +121,7 @@ public class UserContactController extends ABaseController {
     @RequestMapping("/loadContact")
     @GlobalInterceptor
     public ResponseVO loadContact(HttpServletRequest request, @NotEmpty String contactType) {
-        UserContcatTypeEnum contactTypeEnum = UserContcatTypeEnum.getByName(contactType);
+        UserContactTypeEnum contactTypeEnum = UserContactTypeEnum.getByName(contactType);
         if (null == contactTypeEnum) {
             throw new BusinessException(ResponseCodeEnum.CODE_600);
         }
@@ -129,9 +129,9 @@ public class UserContactController extends ABaseController {
         UserContactQuery contactQuery = new UserContactQuery();
         contactQuery.setUserId(tokenUserInfoDto.getUserId());
         contactQuery.setContactType(contactTypeEnum.getType());
-        if (UserContcatTypeEnum.USER == contactTypeEnum) {
+        if (UserContactTypeEnum.USER == contactTypeEnum) {
             contactQuery.setQueryContactUserInfo(true);
-        } else if (UserContcatTypeEnum.GROUP == contactTypeEnum) {
+        } else if (UserContactTypeEnum.GROUP == contactTypeEnum) {
             contactQuery.setQueryGroupInfo(true);
             contactQuery.setQueryExcludeMyGroup(true);
         }

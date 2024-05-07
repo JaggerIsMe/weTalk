@@ -1,10 +1,10 @@
 package com.weTalk.entity.constants;
 
-import com.weTalk.entity.enums.UserContcatTypeEnum;
+import com.weTalk.entity.enums.UserContactTypeEnum;
 
 public class Constants {
 
-    public static final String ROBOT_UID = UserContcatTypeEnum.USER.getPrefix() + "_Robot";
+    public static final String ROBOT_UID = UserContactTypeEnum.USER.getPrefix() + "_Robot";
 
     public static final String REDIS_KEY_CHECK_CODE = "weTalk:checkCode:";
 

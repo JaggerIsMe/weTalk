@@ -1,7 +1,7 @@
 package com.weTalk.utils;
 
 import com.weTalk.entity.constants.Constants;
-import com.weTalk.entity.enums.UserContcatTypeEnum;
+import com.weTalk.entity.enums.UserContactTypeEnum;
 import com.weTalk.exception.BusinessException;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -65,7 +65,7 @@ public class StringTools {
      * @return
      */
     public static String createUserId() {
-        return UserContcatTypeEnum.USER.getPrefix() + createRandomNum(Constants.LENGTH_11);
+        return UserContactTypeEnum.USER.getPrefix() + createRandomNum(Constants.LENGTH_11);
     }
 
     /**
@@ -74,7 +74,7 @@ public class StringTools {
      * @return
      */
     public static String createGroupId() {
-        return UserContcatTypeEnum.GROUP.getPrefix() + createRandomNum(Constants.LENGTH_11);
+        return UserContactTypeEnum.GROUP.getPrefix() + createRandomNum(Constants.LENGTH_11);
     }
 
     /**
