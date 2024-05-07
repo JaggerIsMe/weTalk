@@ -126,21 +126,53 @@ public class StringTools {
 
     /**
      * 生成两个用户之间的会话SessionID
+     *
      * @param userIds
      * @return
      */
-    public static final String createChatSessionId4User(String[] userIds){
+    public static final String createChatSessionId4User(String[] userIds) {
         Arrays.sort(userIds);
         return encodeByMd5(StringUtils.join(userIds, ""));
     }
 
     /**
      * 生成群聊的会话SessionID
+     *
      * @param groupId
      * @return
      */
-    public static final String createChatSessionId4Group(String groupId){
+    public static final String createChatSessionId4Group(String groupId) {
         return encodeByMd5(groupId);
+    }
+
+    /**
+     * 获取文件后缀名
+     *
+     * @param fileName
+     * @return
+     */
+    public static String getFileSuffix(String fileName) {
+        if (isEmpty(fileName)) {
+            return null;
+        }
+        return fileName.substring(fileName.lastIndexOf("."));
+    }
+
+    /**
+     * 是否是数字串
+     *
+     * @param str
+     * @return
+     */
+    public static boolean isNumber(String str) {
+        String numberRegex = "^[0-9]+$";
+        if (null == str) {
+            return false;
+        }
+        if (!str.matches(numberRegex)) {
+            return false;
+        }
+        return true;
     }
 
 }

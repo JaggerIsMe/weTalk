@@ -37,6 +37,10 @@ public class Constants {
 
     public static final String REDIS_KEY_USER_CONTACT = "weTalk:ws:user:contact:";
 
+    public static final String[] IMAGE_SUFFIX_LIST = new String[]{".jpeg", ".jpg", ".png", ".gif", ".bmp", ".webp"};
+
+    public static final String[] VIDEO_SUFFIX_LIST = new String[]{".mp4", ".avi", ".rmvb", ".mkv", ".mov"};
+
     public static final Integer REDIS_TIME_1MIN = 60;
 
     public static final Integer REDIS_KEY_EXPIRES_DAY = REDIS_TIME_1MIN * 60 * 24;
@@ -50,5 +54,7 @@ public class Constants {
     public static final Integer LENGTH_20 = 20;
 
     public static final Long MILLI_SECOND_3DAYS_AGO = 60 * 60 * 24 * 3 * 1000L;
+
+    public static final Long FILE_SIZE_MB = 1024 * 1024L;
 
 }

@@ -17,13 +17,13 @@ public class SysSettingDto implements Serializable {
     private Integer maxGroupMemberCount = 500;
 
     //图片大小
-    private Integer maxImageSize = 2;
+    private Integer maxImageSize = 100;
 
     //视频大小
-    private Integer maxVideoSize = 5;
+    private Integer maxVideoSize = 100;
 
     //文件大小
-    private Integer maxFileSize = 5;
+    private Integer maxFileSize = 100;
 
     //机器人ID
     private String robotUid = Constants.ROBOT_UID;

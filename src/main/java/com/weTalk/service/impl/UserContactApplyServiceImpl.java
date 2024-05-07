@@ -305,21 +305,23 @@ public class UserContactApplyServiceImpl implements UserContactApplyService {
         UserContactApplyQuery applyQuery = new UserContactApplyQuery();
         applyQuery.setApplyId(applyId);
         applyQuery.setStatus(UserContactApplyStatusEnum.WAIT.getStatus());
-        //乐观锁
-        //该SQL语句为：
-        //update user_contact_apply set status = #{}, last_apply_time = #{} where apply_id = #{} and status = 0
-        //由最后的限制条件and status = 0；相当于一个版本号，限制了该字段的值只能从0修改为其它值
+        /**
+         * 乐观锁
+         * 该SQL语句为：
+         * update user_contact_apply set status = #{}, last_apply_time = #{} where apply_id = #{} and status = 0
+         * 由最后的限制条件and status = 0；相当于一个版本号，限制了该字段的值只能从0修改为其它值
+         */
         Integer count = userContactApplyMapper.updateByParam(updateInfo, applyQuery);
         if (count == 0) {
             throw new BusinessException(ResponseCodeEnum.CODE_600);
         }
 
-        if (UserContactApplyStatusEnum.PASS==statusEnum) {
+        if (UserContactApplyStatusEnum.PASS == statusEnum) {
             userContactService.addContact(applyInfo.getApplyUserId(), applyInfo.getReceiveUserId(), applyInfo.getContactId(), applyInfo.getContactType(), applyInfo.getApplyInfo());
             return;
         }
 
-        if (UserContactApplyStatusEnum.BLACK==statusEnum) {
+        if (UserContactApplyStatusEnum.BLACK == statusEnum) {
             Date curDate = new Date();
             UserContact userContact = new UserContact();
             userContact.setUserId(applyInfo.getApplyUserId());
