@@ -14,7 +14,8 @@ public enum MessageTypeEnum {
     ADD_GROUP(9, "%s加入了群组", "加入群组"),
     GROUP_NAME_UPDATE(10, "", "更新群昵称"),
     LEAVE_GROUP(11, "%s退出了群组", "退出群组"),
-    BE_REMOVE_GROUP(12, "%s被管理员移出群组", "被管理员移出群组");
+    BE_REMOVE_GROUP(12, "%s被管理员移出群组", "被管理员移出群组"),
+    ADD_FRIEND_SELF(13, "", "添加好友打招呼消息");
 
     private Integer type;
     private String initMessage;

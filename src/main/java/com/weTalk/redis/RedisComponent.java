@@ -112,13 +112,26 @@ public class RedisComponent {
     }
 
     /**
-     * 添加用户联系人列表缓存
+     * 批量添加用户联系人列表缓存
      *
      * @param userId
      * @param contactIdList
      */
     public void addUserContactBatch(String userId, List<String> contactIdList) {
         redisUtils.lpushAll(Constants.REDIS_KEY_USER_CONTACT + userId, contactIdList, Constants.REDIS_KEY_TOKEN_EXPIRES);
+    }
+
+    /**
+     * 添加用户联系人列表缓存
+     * @param userId
+     * @param contactId
+     */
+    public void addUserContact(String userId, String contactId){
+        List<String> contactIdList = getUserContactList(userId);
+        if (contactIdList.contains(contactId)){
+            return;
+        }
+        redisUtils.lpush(Constants.REDIS_KEY_USER_CONTACT+userId, contactId, Constants.REDIS_KEY_TOKEN_EXPIRES);
     }
 
     /**

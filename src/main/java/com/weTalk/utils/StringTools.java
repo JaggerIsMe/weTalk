@@ -134,4 +134,13 @@ public class StringTools {
         return encodeByMd5(StringUtils.join(userIds, ""));
     }
 
+    /**
+     * 生成群聊的会话SessionID
+     * @param groupId
+     * @return
+     */
+    public static final String createChatSessionId4Group(String groupId){
+        return encodeByMd5(groupId);
+    }
+
 }

@@ -77,13 +77,13 @@ public class RedisUtils<V> {
         }
     }
 
-    public boolean expire(String key, long time){
+    public boolean expire(String key, long time) {
         try {
-            if (time>0){
+            if (time > 0) {
                 redisTemplate.expire(key, time, TimeUnit.SECONDS);
             }
             return true;
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             return false;
         }
@@ -91,6 +91,7 @@ public class RedisUtils<V> {
 
     /**
      * 对List的操作
+     *
      * @param key
      * @param values
      * @param time
@@ -99,11 +100,24 @@ public class RedisUtils<V> {
     public boolean lpushAll(String key, List<V> values, long time) {
         try {
             redisTemplate.opsForList().leftPushAll(key, values);
-            if (time >0){
+            if (time > 0) {
                 expire(key, time);
             }
             return true;
-        }catch (Exception e){
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean lpush(String key, V value, long time) {
+        try {
+            redisTemplate.opsForList().leftPush(key, value);
+            if (time > 0) {
+                expire(key, time);
+            }
+            return true;
+        } catch (Exception e) {
             e.printStackTrace();
             return false;
         }
@@ -111,10 +125,12 @@ public class RedisUtils<V> {
 
     /**
      * 获取队列里的值
+     *
      * @param key
      * @return
      */
-    public List<V> getQueueList(String key){
+    public List<V> getQueueList(String key) {
         return redisTemplate.opsForList().range(key, 0, -1);
     }
+
 }
