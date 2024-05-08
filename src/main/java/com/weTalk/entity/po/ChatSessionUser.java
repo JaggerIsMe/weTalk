@@ -1,6 +1,7 @@
 package com.weTalk.entity.po;
 
 import com.weTalk.entity.enums.UserContactTypeEnum;
+import com.weTalk.utils.StringTools;
 
 import java.io.Serializable;
 
@@ -56,6 +57,8 @@ public class ChatSessionUser implements Serializable {
     /**
      * 会话类型
      * 单聊还是群聊
+     * <p>
+     * 该属性不在数据库设计里
      */
     private Integer contactType;
 
@@ -117,6 +120,9 @@ public class ChatSessionUser implements Serializable {
     }
 
     public Integer getContactType() {
+        if (StringTools.isEmpty(contactId)) {
+            return null;
+        }
         return UserContactTypeEnum.getByPrefix(contactId).getType();
     }
 

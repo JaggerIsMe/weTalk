@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Resource;
 
 import com.weTalk.config.AppConfig;
+import com.weTalk.dto.MessageSendDto;
 import com.weTalk.dto.TokenUserInfoDto;
 import com.weTalk.entity.constants.Constants;
 import com.weTalk.entity.enums.*;
@@ -21,6 +22,7 @@ import com.weTalk.mappers.UserInfoBeautyMapper;
 import com.weTalk.redis.RedisComponent;
 import com.weTalk.service.ChatSessionUserService;
 import com.weTalk.service.UserContactService;
+import com.weTalk.websocket.MessageHandler;
 import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.stereotype.Service;
 
@@ -61,6 +63,9 @@ public class UserInfoServiceImpl implements UserInfoService {
 
     @Resource
     private ChatSessionUserService chatSessionUserService;
+
+    @Resource
+    private MessageHandler messageHandler;
 
     /**
      * 根据条件查询列表
@@ -261,11 +266,11 @@ public class UserInfoServiceImpl implements UserInfoService {
         contactQuery.setUserId(userInfo.getUserId());
         contactQuery.setStatus(UserContactStatusEnum.FRIEND.getStatus());
         List<UserContact> contactList = userContactMapper.selectList(contactQuery);
-        List<String> contactIdList = contactList.stream().map(item->item.getContactId()).collect(Collectors.toList());
+        List<String> contactIdList = contactList.stream().map(item -> item.getContactId()).collect(Collectors.toList());
 
         //登录成功后，将用户联系人列表添加进Redis里 缓存起来
         redisComponent.cleanUserContact(userInfo.getUserId());
-        if (!contactIdList.isEmpty()){
+        if (!contactIdList.isEmpty()) {
             redisComponent.addUserContactBatch(userInfo.getUserId(), contactIdList);
         }
 
@@ -302,6 +307,7 @@ public class UserInfoServiceImpl implements UserInfoService {
 
     /**
      * 修改用户信息 并且同步更新会话的名称
+     *
      * @param userInfo
      * @param avatarFile
      * @param avatarCover
@@ -336,7 +342,7 @@ public class UserInfoServiceImpl implements UserInfoService {
         if (!dbInfo.getNickName().equals(userInfo.getNickName())) {
             contactNameUpdate = userInfo.getNickName();
         }
-        if (null == contactNameUpdate){
+        if (null == contactNameUpdate) {
             return;
         }
 
@@ -368,10 +374,16 @@ public class UserInfoServiceImpl implements UserInfoService {
 
     /**
      * 强制用户下线
+     *
      * @param userId
      */
     @Override
     public void forceOffLine(String userId) {
-        //TODO 强制用户下线
+        //强制用户下线
+        MessageSendDto messageSendDto = new MessageSendDto();
+        messageSendDto.setContactType(UserContactTypeEnum.USER.getType());
+        messageSendDto.setMessageType(MessageTypeEnum.FORCE_OFF_LINE.getType());
+        messageSendDto.setContactId(userId);
+        messageHandler.sendMessage(messageSendDto);
     }
 }
