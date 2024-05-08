@@ -139,7 +139,7 @@ const showEdit = (data) => {
       data.updateDescList = data.updateDescArray.map((item) => {
         return { title: item }
       })
-      data.fileName = 'weTalk.' + data.version + '.exe'
+      data.fileName = 'WeTalk.' + data.version + '.exe'
     }
     formData.value = Object.assign(
       {},

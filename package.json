@@ -1,7 +1,7 @@
 {
   "name": "weTalk-front",
   "version": "1.0.0",
-  "description": "weTalk",
+  "description": "WeTalk",
   "main": "./out/main/index.js",
   "author": "example.com",
   "homepage": "https://www.electronjs.org",
@@ -20,7 +20,7 @@
     "extraResources": [
       "./assets/**"
     ],
-    "productName": "weTalk",
+    "productName": "WeTalk",
     "appId": "com.weTalk",
     "directories": {
       "output": "installPackages"
@@ -35,7 +35,7 @@
       "installerHeaderIcon": "./resources/icon.ico",
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "weTalk"
+      "shortcutName": "WeTalk"
     },
     "mac": {
       "icon": "icons/icon.icns"

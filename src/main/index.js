@@ -52,7 +52,7 @@ function createWindow() {
 
   mainWindow.on('ready-to-show', () => {
     mainWindow.show()
-    mainWindow.setTitle("weTalk")
+    mainWindow.setTitle("WeTalk")
   })
 
   mainWindow.once('focus', () => mainWindow.flashFrame(false));
@@ -81,14 +81,14 @@ function createWindow() {
   const tray = new Tray(icon)
   const contextMenu = [
     {
-      label: '退出weTalk', click: function () {
+      label: '退出WeTalk', click: function () {
         app.exit();
       }
     }
   ];
 
   const menu = Menu.buildFromTemplate(contextMenu)
-  tray.setToolTip('weTalk')
+  tray.setToolTip('WeTalk')
   tray.setContextMenu(menu)
   // 点击托盘图标，显示主窗口
   tray.on("click", () => {

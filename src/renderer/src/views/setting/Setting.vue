@@ -40,7 +40,7 @@ const settingMenuList = ref([
     bgColor: '#ffd04f'
   },
   {
-    name: '关于weTalk',
+    name: '关于WeTalk',
     icon: 'icon-about',
     path: '/setting/about',
     bgColor: '#08bf61'

@@ -4,7 +4,7 @@
       <!--input输入-->
       <el-form-item label="版本信息">
         <div class="version-info">
-          <div>weTalk 1.0.0</div>
+          <div>WeTalk 1.0.0</div>
           <div>
             <el-button type="primary" @click="checkUpdate">检查更新</el-button>
           </div>

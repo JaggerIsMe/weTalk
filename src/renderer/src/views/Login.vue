@@ -1,6 +1,6 @@
 <template>
   <div class="login-panel">
-    <div class="title drag">weTalk</div>
+    <div class="title drag">WeTalk</div>
     <div v-if="showLoading" class="loading-panel">
       <img src="../assets/img/loading.gif" />
     </div>
