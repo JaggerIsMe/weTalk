@@ -172,6 +172,7 @@ public class ChannelContextUtils {
 
     /**
      * 把用户添加进群组会话
+     *
      * @param userId
      * @param groupId
      */
@@ -248,6 +249,24 @@ public class ChannelContextUtils {
             return;
         }
         channelGroup.writeAndFlush(new TextWebSocketFrame(JsonUtils.convertObj2Json(messageSendDto)));
+
+        //用户被移出群聊后发送消息通知群成员
+        //把redis里有关的缓存移除 还要把通信通道channel移除
+        MessageTypeEnum messageTypeEnum = MessageTypeEnum.getByType(messageSendDto.getMessageType());
+        if (messageTypeEnum.LEAVE_GROUP == messageTypeEnum || MessageTypeEnum.BE_REMOVE_GROUP == messageTypeEnum) {
+            String userId = (String) messageSendDto.getExtendData();
+            redisComponent.removeUserContact(userId, messageSendDto.getContactId());
+            Channel channel = USER_CONTEXT_MAP.get(userId);
+            if (null == channel) {
+                return;
+            }
+            channelGroup.remove(channel);
+        }
+        //群聊被解散了 把通道关闭
+        if (MessageTypeEnum.GROUP_DISSOLUTION == messageTypeEnum) {
+            GROUP_CONTEXT_MAP.remove(messageSendDto.getContactId());
+            channelGroup.close();
+        }
     }
 
     /**

@@ -1,7 +1,6 @@
 package com.weTalk.controller;
 
 import com.weTalk.annotation.GlobalInterceptor;
-import com.weTalk.dto.MessageSendDto;
 import com.weTalk.dto.TokenUserInfoDto;
 import com.weTalk.entity.constants.Constants;
 import com.weTalk.entity.po.UserInfo;
@@ -12,7 +11,6 @@ import com.weTalk.redis.RedisComponent;
 import com.weTalk.redis.RedisUtils;
 import com.weTalk.service.UserInfoService;
 import com.weTalk.utils.CopyTools;
-import com.weTalk.websocket.MessageHandler;
 import com.wf.captcha.ArithmeticCaptcha;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,9 +41,6 @@ public class AccountController extends ABaseController {
 
     @Resource
     private RedisComponent redisComponent;
-
-//    @Resource
-//    private MessageHandler messageHandler;
 
     /**
      * 生成验证码
@@ -78,6 +73,7 @@ public class AccountController extends ABaseController {
 
     /**
      * 注册
+     *
      * @param checkCodeKey
      * @param email
      * @param password
@@ -105,6 +101,7 @@ public class AccountController extends ABaseController {
 
     /**
      * 登录
+     *
      * @param checkCodeKey
      * @param email
      * @param password
@@ -113,9 +110,9 @@ public class AccountController extends ABaseController {
      */
     @RequestMapping("/login")
     public ResponseVO login(@NotEmpty String checkCodeKey,
-                               @NotEmpty @Email String email,
-                               @NotEmpty String password,
-                               @NotEmpty String checkCode) {
+                            @NotEmpty @Email String email,
+                            @NotEmpty String password,
+                            @NotEmpty String checkCode) {
         try {
             if (!checkCode.equalsIgnoreCase((String) redisUtils.get(Constants.REDIS_KEY_CHECK_CODE + checkCodeKey))) {
                 throw new BusinessException("图片验证码错误");
@@ -134,18 +131,15 @@ public class AccountController extends ABaseController {
         }
     }
 
+    /**
+     * 获取系统设置
+     *
+     * @return
+     */
     @RequestMapping("/getSysSetting")
     @GlobalInterceptor
     public ResponseVO getSysSetting() {
         return getSuccessResponseVO(redisComponent.getSysSetting());
     }
-
-//    @RequestMapping("/testBroadcast")
-//    public ResponseVO testBroadcast() {
-//        MessageSendDto sendDto = new MessageSendDto();
-//        sendDto.setMessageContent("来自5050的消息" + System.currentTimeMillis());
-//        messageHandler.sendMessage(sendDto);
-//        return getSuccessResponseVO(null);
-//    }
 
 }

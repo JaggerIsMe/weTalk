@@ -157,4 +157,14 @@ public class RedisComponent {
         return (List<String>) redisUtils.getQueueList(Constants.REDIS_KEY_USER_CONTACT + userId);
     }
 
+    /**
+     * 移除用户联系人缓存
+     *
+     * @param userId
+     * @param contactId
+     */
+    public void removeUserContact(String userId, String contactId) {
+        redisUtils.remove(Constants.REDIS_KEY_USER_CONTACT + userId, contactId);
+    }
+
 }

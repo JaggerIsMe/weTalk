@@ -330,7 +330,7 @@ public class UserContactServiceImpl implements UserContactService {
             GroupInfo groupInfo = this.groupInfoMapper.selectByGroupId(contactId);
             chatSessionUser.setContactName(groupInfo.getGroupName());
             chatSessionUser.setSessionId(sessionId);
-            this.chatSessionUserMapper.insert(chatSessionUser);
+            this.chatSessionUserMapper.insertOrUpdate(chatSessionUser);
 
             //新成员加群后，发送群通知消息
             UserInfo applyUserInfo = this.userInfoMapper.selectByUserId(applyUserId);

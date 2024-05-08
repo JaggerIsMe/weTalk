@@ -9,6 +9,7 @@ import com.weTalk.entity.vo.UserInfoVO;
 import com.weTalk.service.UserInfoService;
 import com.weTalk.utils.CopyTools;
 import com.weTalk.utils.StringTools;
+import com.weTalk.websocket.ChannelContextUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -21,19 +22,23 @@ import java.io.IOException;
 
 @RestController
 @RequestMapping("/userInfo")
-public class UserInfoController extends ABaseController{
+public class UserInfoController extends ABaseController {
 
     @Resource
     private UserInfoService userInfoService;
 
+    @Resource
+    private ChannelContextUtils channelContextUtils;
+
     /**
      * 获取用户信息
+     *
      * @param request
      * @return
      */
     @RequestMapping("/getUserInfo")
     @GlobalInterceptor
-    public ResponseVO getUserInfo(HttpServletRequest request){
+    public ResponseVO getUserInfo(HttpServletRequest request) {
         TokenUserInfoDto tokenUserInfoDto = getTokenUserInfo(request);
         UserInfo userInfo = userInfoService.getUserInfoByUserId(tokenUserInfoDto.getUserId());
         UserInfoVO userInfoVO = CopyTools.copy(userInfo, UserInfoVO.class);
@@ -43,6 +48,7 @@ public class UserInfoController extends ABaseController{
 
     /**
      * 更新用户信息
+     *
      * @param request
      * @param userInfo
      * @param avatarFile
@@ -71,6 +77,7 @@ public class UserInfoController extends ABaseController{
 
     /**
      * 修改密码
+     *
      * @param request
      * @param password
      * @return
@@ -83,13 +90,16 @@ public class UserInfoController extends ABaseController{
         UserInfo userInfo = new UserInfo();
         userInfo.setPassword(StringTools.encodeByMd5(password));
         this.userInfoService.updateUserInfoByUserId(userInfo, tokenUserInfoDto.getUserId());
-        //TODO 强制退出 重新登录
+
+        //强制退出 重新登录
+        channelContextUtils.closeContext(tokenUserInfoDto.getUserId());
 
         return getSuccessResponseVO(null);
     }
 
     /**
      * 退出登录
+     *
      * @param request
      * @return
      */
@@ -98,7 +108,8 @@ public class UserInfoController extends ABaseController{
     public ResponseVO logout(HttpServletRequest request) {
         TokenUserInfoDto tokenUserInfoDto = getTokenUserInfo(request);
 
-        //TODO 强制退出 关闭WebSocket链接
+        //强制退出 关闭WebSocket链接
+        channelContextUtils.closeContext(tokenUserInfoDto.getUserId());
 
         return getSuccessResponseVO(null);
     }

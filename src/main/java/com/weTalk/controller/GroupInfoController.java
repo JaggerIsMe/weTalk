@@ -6,6 +6,7 @@ import java.util.List;
 import com.weTalk.annotation.GlobalInterceptor;
 import com.weTalk.dto.TokenUserInfoDto;
 import com.weTalk.entity.enums.GroupStatusEnum;
+import com.weTalk.entity.enums.MessageTypeEnum;
 import com.weTalk.entity.enums.UserContactStatusEnum;
 import com.weTalk.entity.po.UserContact;
 import com.weTalk.entity.query.GroupInfoQuery;
@@ -92,6 +93,7 @@ public class GroupInfoController extends ABaseController {
 
     /**
      * 获取群组基本详情
+     *
      * @param request
      * @param groupId
      * @return
@@ -111,11 +113,12 @@ public class GroupInfoController extends ABaseController {
 
     /**
      * 获取群组基本详情
+     *
      * @param request
      * @param groupId
      * @return
      */
-    private GroupInfo getGroupDetailCommon(HttpServletRequest request, String groupId){
+    private GroupInfo getGroupDetailCommon(HttpServletRequest request, String groupId) {
         TokenUserInfoDto tokenUserInfoDto = getTokenUserInfo(request);
         UserContact userContact = this.userContactService.getUserContactByUserIdAndContactId(tokenUserInfoDto.getUserId(), groupId);
         if (null == userContact || !UserContactStatusEnum.FRIEND.getStatus().equals(userContact.getStatus())) {
@@ -129,6 +132,14 @@ public class GroupInfoController extends ABaseController {
         return groupInfo;
     }
 
+    /**
+     * 获取聊天会话群聊详情
+     * 获取群员信息
+     *
+     * @param request
+     * @param groupId
+     * @return
+     */
     @RequestMapping("/getGroupInfo4Chat")
     @GlobalInterceptor
     public ResponseVO getGroupInfo4Chat(HttpServletRequest request, @NotEmpty String groupId) {
@@ -147,7 +158,56 @@ public class GroupInfoController extends ABaseController {
         groupInfoVO.setGroupInfo(groupInfo);
         groupInfoVO.setUserContactList(userContactList);
 
-        return getSuccessResponseVO(groupInfo);
+        return getSuccessResponseVO(groupInfoVO);
+    }
+
+    /**
+     * 管理员添加、移除群成员
+     *
+     * @param request
+     * @param groupId
+     * @param selectContacts
+     * @param opType
+     * @return
+     */
+    @RequestMapping("/addOrRemoveGroupUser")
+    @GlobalInterceptor
+    public ResponseVO addOrRemoveGroupUser(HttpServletRequest request,
+                                           @NotEmpty String groupId,
+                                           @NotEmpty String selectContacts,
+                                           @NotNull Integer opType) {
+        TokenUserInfoDto ownerInfoDto = getTokenUserInfo(request);
+        groupInfoService.addOrRemoveGroupMember(ownerInfoDto, groupId, selectContacts, opType);
+        return getSuccessResponseVO(null);
+    }
+
+    /**
+     * 退出群聊
+     *
+     * @param request
+     * @param groupId
+     * @return
+     */
+    @RequestMapping("/leaveGroup")
+    @GlobalInterceptor
+    public ResponseVO leaveGroup(HttpServletRequest request, @NotEmpty String groupId) {
+        TokenUserInfoDto userInfoDto = getTokenUserInfo(request);
+        groupInfoService.leaveGroup(userInfoDto.getUserId(), groupId, MessageTypeEnum.LEAVE_GROUP);
+        return getSuccessResponseVO(null);
+    }
+
+    /**
+     * 群主解散群聊
+     * @param request
+     * @param groupId
+     * @return
+     */
+    @RequestMapping("/dissolutionGroup")
+    @GlobalInterceptor
+    public ResponseVO dissolutionGroup(HttpServletRequest request, @NotEmpty String groupId) {
+        TokenUserInfoDto userInfoDto = getTokenUserInfo(request);
+        groupInfoService.dissolutionGroup(userInfoDto.getUserId(), groupId);
+        return getSuccessResponseVO(null);
     }
 
 }

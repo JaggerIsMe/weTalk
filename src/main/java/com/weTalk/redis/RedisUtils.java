@@ -133,4 +133,20 @@ public class RedisUtils<V> {
         return redisTemplate.opsForList().range(key, 0, -1);
     }
 
+    /**
+     * 删除集合里的值
+     * @param key
+     * @param value
+     * @return
+     */
+    public long remove(String key, Object value) {
+        try {
+            Long remove = redisTemplate.opsForList().remove(key, 1, value);
+            return remove;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0;
+        }
+    }
+
 }
