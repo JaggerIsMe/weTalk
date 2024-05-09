@@ -4,6 +4,7 @@ import com.sun.istack.internal.NotNull;
 import com.weTalk.annotation.GlobalInterceptor;
 import com.weTalk.dto.TokenUserInfoDto;
 import com.weTalk.dto.UserContactSearchResultDto;
+import com.weTalk.entity.constants.Constants;
 import com.weTalk.entity.enums.*;
 import com.weTalk.entity.po.UserContact;
 import com.weTalk.entity.po.UserInfo;
@@ -146,6 +147,7 @@ public class UserContactController extends ABaseController {
     }
 
     /**
+     * （在会话窗口里进行的操作，点击会话窗口里的用户的头像）
      * 点击用户的头像时获取用户的简单信息
      * 该用户不一定是好友
      *
@@ -157,21 +159,27 @@ public class UserContactController extends ABaseController {
     @GlobalInterceptor
     public ResponseVO getContactInfo(HttpServletRequest request, @NotEmpty String contactId) {
         TokenUserInfoDto tokenUserInfoDto = getTokenUserInfo(request);
-        UserInfo userInfo = userInfoService.getUserInfoByUserId(contactId);
-        UserInfoVO userInfoVO = CopyTools.copy(userInfo, UserInfoVO.class);
-        //先将联系人状态设置为 非好友
-        userInfoVO.setContactStatus(UserContactStatusEnum.NOT_FRIEND.getStatus());
-
-        //当在user_contact表里根据用户id和联系人id可以查询到该好友时 将联系人状态设置为 好友
-        UserContact userContact = userContactService.getUserContactByUserIdAndContactId(tokenUserInfoDto.getUserId(), contactId);
-        if (userContact != null) {
-            userInfoVO.setContactStatus(UserContactStatusEnum.FRIEND.getStatus());
+        UserInfoVO userInfoVO = new UserInfoVO();
+        if (Constants.ROBOT_UID.equals(contactId)) {
+            //如果用户是在和机器人的聊天框里点击机器人头像，查看机器人基本信息
+            userInfoVO.setUserId(contactId);
+            userInfoVO.setAreaName("火星");
+        } else {
+            UserInfo userInfo = userInfoService.getUserInfoByUserId(contactId);
+            userInfoVO = CopyTools.copy(userInfo, UserInfoVO.class);
+            //先将联系人状态设置为 非好友
+            userInfoVO.setContactStatus(UserContactStatusEnum.NOT_FRIEND.getStatus());
+            //当在user_contact表里根据用户id和联系人id可以查询到该好友时 将联系人状态设置为 好友
+            UserContact userContact = userContactService.getUserContactByUserIdAndContactId(tokenUserInfoDto.getUserId(), contactId);
+            if (userContact != null) {
+                userInfoVO.setContactStatus(UserContactStatusEnum.FRIEND.getStatus());
+            }
         }
-
         return getSuccessResponseVO(userInfoVO);
     }
 
     /**
+     * （在好友列表里的操作，点击好友列表里的好友或群聊的头像）
      * 点击联系人列表里的联系人，以获取联系人的详细信息
      * 该用户一定是好友，即一定在好友列表里存在
      *
