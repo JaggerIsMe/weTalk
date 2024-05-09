@@ -349,8 +349,9 @@ public class ChatMessageServiceImpl implements ChatMessageService {
         ChatMessage message = chatMessageMapper.selectByMessageId(messageId);
         String contactId = message.getContactId();
         UserContactTypeEnum contactTypeEnum = UserContactTypeEnum.getByPrefix(contactId);
-        //该媒体文件消息不是发送给当前用户
-        if (UserContactTypeEnum.USER == contactTypeEnum && !userInfoDto.getUserId().equals(message.getContactId())) {
+        //该媒体文件消息不是发送给当前用户 或 该媒体文件消息不是当前用户自己发送的
+        //即 用户可以在单聊中下载自己发送的文件也可以下载别人发送给自己的文件
+        if (UserContactTypeEnum.USER == contactTypeEnum && !userInfoDto.getUserId().equals(message.getContactId()) && !userInfoDto.getUserId().equals(message.getSendUserId())) {
             throw new BusinessException(ResponseCodeEnum.CODE_600);
         }
         //当前用户不在该群聊中，无法下载该群聊的文件
