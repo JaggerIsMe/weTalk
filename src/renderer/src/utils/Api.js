@@ -1,7 +1,7 @@
 const api = {
-    prodDomain: "http://192.168.0.110:5050",//正式环境 http连接地址
+    prodDomain: "http://114.132.60.122:7030",//正式环境 http连接地址
     devDomain: "http://127.0.0.1:5050",
-    prodWsDomain: "ws:/192.168.0.110:5051/ws",//正式环境websocket连接地址
+    prodWsDomain: "ws:/114.132.60.122:7031/ws",//正式环境websocket连接地址
     devWsDomain: "ws:/127.0.0.1:5051/ws",
     checkCode: "/account/checkCode",//验证码
     login: "/account/login",//登录
