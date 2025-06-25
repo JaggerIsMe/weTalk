@@ -1,0 +1,124 @@
+package com.weTalk.service;
+
+import java.io.IOException;
+import java.util.List;
+
+import com.weTalk.dto.TokenUserInfoDto;
+import com.weTalk.entity.query.UserInfoQuery;
+import com.weTalk.entity.po.UserInfo;
+import com.weTalk.entity.vo.PaginationResultVO;
+import org.springframework.web.multipart.MultipartFile;
+
+
+/**
+ * 用户信息表 业务接口
+ */
+public interface UserInfoService {
+
+	/**
+	 * 根据条件查询列表
+	 */
+	List<UserInfo> findListByParam(UserInfoQuery param);
+
+	/**
+	 * 根据条件查询列表
+	 */
+	Integer findCountByParam(UserInfoQuery param);
+
+	/**
+	 * 分页查询
+	 */
+	PaginationResultVO<UserInfo> findListByPage(UserInfoQuery param);
+
+	/**
+	 * 新增
+	 */
+	Integer add(UserInfo bean);
+
+	/**
+	 * 批量新增
+	 */
+	Integer addBatch(List<UserInfo> listBean);
+
+	/**
+	 * 批量新增/修改
+	 */
+	Integer addOrUpdateBatch(List<UserInfo> listBean);
+
+	/**
+	 * 多条件更新
+	 */
+	Integer updateByParam(UserInfo bean,UserInfoQuery param);
+
+	/**
+	 * 多条件删除
+	 */
+	Integer deleteByParam(UserInfoQuery param);
+
+	/**
+	 * 根据UserId查询对象
+	 */
+	UserInfo getUserInfoByUserId(String userId);
+
+
+	/**
+	 * 根据UserId修改
+	 */
+	Integer updateUserInfoByUserId(UserInfo bean,String userId);
+
+
+	/**
+	 * 根据UserId删除
+	 */
+	Integer deleteUserInfoByUserId(String userId);
+
+
+	/**
+	 * 根据Email查询对象
+	 */
+	UserInfo getUserInfoByEmail(String email);
+
+
+	/**
+	 * 根据Email修改
+	 */
+	Integer updateUserInfoByEmail(UserInfo bean,String email);
+
+
+	/**
+	 * 根据Email删除
+	 */
+	Integer deleteUserInfoByEmail(String email);
+
+	/**
+	 * 注册
+	 */
+	void register(String email, String password, String nickName);
+
+	/**
+	 * 登录
+	 */
+	TokenUserInfoDto login(String email, String password);
+
+	/**
+	 * 更新用户信息
+	 * @param userInfo
+	 * @param avatarFile
+	 * @param avatarCover
+	 */
+    void updateByUserInfo(UserInfo userInfo, MultipartFile avatarFile, MultipartFile avatarCover) throws IOException;
+
+	/**
+	 * 更新用户状态
+	 * @param status
+	 * @param userId
+	 */
+	void updateUserStatus(Integer status, String userId);
+
+	/**
+	 * 强制用户下线
+	 * @param userId
+	 */
+	void forceOffLine(String userId);
+
+}
