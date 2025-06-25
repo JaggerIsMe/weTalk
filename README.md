@@ -6,3 +6,4 @@
 AI Version
 
 项目从JDK8升级到JDK17支持AI框架，使用langchain对接AI大模型
+实现AI会话的隔离和记忆
